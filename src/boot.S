@@ -1,6 +1,6 @@
 /* Limine-compliant boot assembly for Math Unikernel - x86_64 */
 
-# Limine Base Revision Request
+# LIMINE BASE REVISION REQUEST
 .section .requests, "a", @progbits
 .balign 8
 limine_base_revision:
@@ -28,11 +28,11 @@ _start:
 
 	
 	# JUMP
-	.extern kmain
-	call kmain
+	.extern kernel_main 
+	call kernel_main
 
 # SAFETY 
 	halt:
 	cli
 	hlt
-	jmp halt    kmain(void *boot_info).
+	jmp halt 
