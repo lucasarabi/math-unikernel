@@ -1,3 +1,6 @@
+/* Tell the linker we want an x86_64 elf output file */
+OUTPUT_FORMAT(elf64-x86-64)
+
 /* Tell the linker that our entry point is the _start label from boot.S */
 ENTRY(_start)
 
