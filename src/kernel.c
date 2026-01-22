@@ -6,15 +6,18 @@
 #include "libmu/libmu.c" // Include last
 
 __attribute__((used, section(".limine_requests")))
-static volatile uint64_t limine_base_revision[] = LIMINE_BASE_REVISION(0);
+static volatile LIMINE_BASE_REVISION(0);
+//static volatile uint64_t limine_base_revision[] = LIMINE_BASE_REVISION(4);
 
 // Skipping framebuffer request -- we do not need graphics
 
 __attribute__((used, section(".limine_requests_start")))
-static volatile uint64_t limine_requests_start_marker[] = LIMINE_REQUESTS_START_MARKER;
+static volatile LIMINE_REQUESTS_START_MARKER;
+//static volatile uint64_t limine_requests_start_marker[] = LIMINE_REQUESTS_START_MARKER;
 
 __attribute__((used, section(".limine_requests_end")))
-static volatile uint64_t limine_requests_end_marker[] = LIMINE_REQUESTS_END_MARKER;
+static volatile LIMINE_REQUESTS_END_MARKER;
+//static volatile uint64_t limine_requests_end_marker[] = LIMINE_REQUESTS_END_MARKER;
 
 // Send byte to hardware port
 static inline void outb(uint16_t port, uint8_t val) {
@@ -27,7 +30,7 @@ static inline void outb(uint16_t port, uint8_t val) {
 
 void kernel_main(void) {
     
-    if(LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision) == false) {
+    if(!LIMINE_BASE_REVISION_SUPPORTED) {
         hcf();
     }
 
