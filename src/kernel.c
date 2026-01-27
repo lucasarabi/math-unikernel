@@ -3,7 +3,8 @@
 #include <stdbool.h>
 #include "limine.h"
 
-#include "libmu/libmu.c" // Include last
+#include "libmu/libmu.c" 
+#include "libmu/muio.c"
 
 __attribute__((used, section(".limine_requests")))
 static volatile LIMINE_BASE_REVISION(0);
@@ -19,14 +20,6 @@ __attribute__((used, section(".limine_requests_end")))
 static volatile LIMINE_REQUESTS_END_MARKER;
 //static volatile uint64_t limine_requests_end_marker[] = LIMINE_REQUESTS_END_MARKER;
 
-// Send byte to hardware port
-static inline void outb(uint16_t port, uint8_t val) {
-    __asm__ volatile ("outb %b0, %w1" 
-                        : 
-                        : "a"(val), "Nd"(port) 
-                        : "memory"
-                    );
-}
 
 void kernel_main(void) {
     
@@ -37,7 +30,11 @@ void kernel_main(void) {
     // Skipping framebuffer response check 
 
     // Send data to serial port
-    outb(0x3f8, 'S'); 
+    //outb(0x3f8, 'S'); 
     
+    // Test print
+    print_literal("hello world!");
+    print_literal("I've booted!");
+
     hcf();
 }
