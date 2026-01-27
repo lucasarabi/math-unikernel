@@ -13,6 +13,7 @@ echo "Note: Check this terminal for serial output ('S')."
 qemu-system-x86_64 \
     -drive file="$ISO_NAME",format=raw \
     -serial stdio \
+    -display none \
     -m 512M \
     -no-reboot \
     -no-shutdown \
