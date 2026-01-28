@@ -7,7 +7,8 @@ LD = x86_64-elf-ld
 # -mcmodel=kernel: Matches higher-half address in linker script
 CFLAGS = -m64 -march=x86-64 -O2 -ffreestanding -nostdlib \
          -mno-red-zone -fno-stack-protector -fno-pic -fno-pie \
-         -mcmodel=kernel -Isrc -I. -Wall
+         -mcmodel=kernel -Isrc -I. -Wall -mno-sse -mno-sse2 \
+         -mno-mmx -mno-80387
 
 LDFLAGS = -T linker.ld -static -nostdlib -z max-page-size=0x1000
 
