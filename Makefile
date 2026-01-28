@@ -37,3 +37,19 @@ $(SRC_DIR)/%.o: $(SRC_DIR)/%.c
 
 clean:
 	rm -f $(OBJS) $(KERNEL)
+	rm -rf iso_root $(ISO_IMAGE)
+
+ISO_IMAGE = image.iso
+
+.PHONY: all clean iso
+
+# Necessary for MacOS boot, optional 'make iso'
+iso: $(KERNEL)
+	mkdir -p iso_root/boot/
+	cp $(KERNEL) iso_root/boot/
+	xorriso -as mkisofs -b limine-bios-cd.bin \
+		-no-emul-boot -boot-load-size 4 -boot-info-table \
+		--efi-boot limine-uefi-cd.bin \
+		-efi-boot-part --efi-boot-image --protective-msdos-label \
+		iso_root -o $(ISO_IMAGE)
+	@echo "ISO created: $(ISO_IMAGE)"
