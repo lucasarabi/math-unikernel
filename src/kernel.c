@@ -53,11 +53,8 @@ void kernel_main(void) {
 
     PRINTS("Limine handshake successful\n");
 
-    PRINTS("Finding RAM ceiling\n");
-    uint64_t highest_addr = get_highest_usable_addr(memmap_request.response);
-    PRINTS("Highest address found: ");
-    PRINTH(highest_addr);
-    PRINTLN;
+    pmm_init(memmap_request.response); 
+
 
     PRINTS("Exiting...\n");
     hcf();
