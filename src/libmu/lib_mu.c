@@ -11,7 +11,10 @@ static inline void* memcpy(void* restrict dest, const void* restrict src, size_t
     return dest;
 }
 
-static inline void* memset(void* s, int c, size_t n) {
+// s is start addr
+// c is memset value
+// n is number of bytes
+static inline void* memset(void* s, uint8_t c, size_t n) {
     uint8_t* p = (uint8_t*)s;
 
     for(size_t i = 0; i < n; i++) {

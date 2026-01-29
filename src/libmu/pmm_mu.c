@@ -58,8 +58,9 @@ static void pmm_init(struct limine_memmap_response* response) {
     struct limine_memmap_entry** entries = response->entries;
 
     uint64_t ceiling_addr = get_highest_usable_addr(response); 
-    uint64_t bitmap_size = (ceiling_addr / 4096) / 8;
-    
+    uint64_t total_frames = (ceiling_addr + 4095) / 4096;
+    uint64_t bitmap_size = (total_frames + 7) / 8;
+
     // Get start address -- earliest opening in usable physical memory
     uint8_t* bitmap_start = NULL;
     for(uint64_t i = 0; i < num_entries; i++) {
@@ -75,6 +76,25 @@ static void pmm_init(struct limine_memmap_response* response) {
     PRINTS("Bitmap start address: ");    
     PRINTH((uint64_t)bitmap_start);
     PRINTLN;
+    
+    memset(bitmap_start, 0xFF, bitmap_size);
+    uint8_t* bitmap = bitmap_start; 
+    
+    // To-do -- Print entire memory map to understand
+    while(bitmap < bitmap_start + bitmap_size) {
+        PRINTH(*bitmap);
+        PRINTLN;
+        bitmap++;
+    }
 
 }
+
+
+
+
+
+
+
+
+
 
