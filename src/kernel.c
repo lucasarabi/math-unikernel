@@ -55,7 +55,6 @@ void kernel_main(void) {
 
     pmm_init(memmap_request.response); 
 
-
     PRINTS("Exiting...\n");
     hcf();
 }

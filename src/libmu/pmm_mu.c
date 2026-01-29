@@ -54,6 +54,27 @@ static uint64_t get_highest_usable_addr(struct limine_memmap_response* response)
 }
 
 static void pmm_init(struct limine_memmap_response* response) {
-    uint64_t highest_usable_addr = get_highest_usable_addr(response); 
+    const uint64_t num_entries = response->entry_count;
+    struct limine_memmap_entry** entries = response->entries;
+
+    uint64_t ceiling_addr = get_highest_usable_addr(response); 
+    uint64_t bitmap_size = (ceiling_addr / 4096) / 8;
+    
+    // Get start address -- earliest opening in usable physical memory
+    uint8_t* bitmap_start = NULL;
+    for(uint64_t i = 0; i < num_entries; i++) {
+        struct limine_memmap_entry* current = entries[i];
+        bool big_enough = current->length >= bitmap_size;
+
+        if(current->type == LIMINE_MEMMAP_USABLE && big_enough) {
+            bitmap_start = (uint8_t*)current->base;
+            break;
+        }
+    }
+
+    PRINTS("Bitmap start address: ");    
+    PRINTH((uint64_t)bitmap_start);
+    PRINTLN;
 
 }
+
