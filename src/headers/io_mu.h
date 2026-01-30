@@ -1,0 +1,10 @@
+#ifndef IO_MU_H
+#define IO_MU_H
+
+#include <stdint.h>
+
+void serial_init(void);
+void write_serial_str(const char* s);
+void write_serial_hex(uint64_t val);
+
+#endif

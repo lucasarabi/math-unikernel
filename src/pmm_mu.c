@@ -1,4 +1,8 @@
-// Headers included in kernel.c
+#include "headers/pmm_mu.h"
+#include "headers/limine.h"
+#include "headers/lib_mu.h"
+#include "headers/io_mu.h"
+
 
 #define PRINTS write_serial_str
 #define PRINTH write_serial_hex
@@ -64,7 +68,7 @@ static inline void free_frame(uint8_t* bitmap, uint64_t frame_index) {
     bitmap[byte_index] &= ~(1 << bit_index);
 }
 
-static void pmm_init(struct limine_memmap_response* response) {
+void pmm_init(struct limine_memmap_response* response) {
     const uint64_t num_entries = response->entry_count;
     struct limine_memmap_entry** entries = response->entries;
 
@@ -116,13 +120,5 @@ static void pmm_init(struct limine_memmap_response* response) {
         claim_frame(bitmap, frame_index);
     }
 
-    PRINTS("Verifying Bitmap at 0x50000...");
-    PRINTLN;
-
-    for (uint64_t i = 0; i < 0x3f8 ; i++) {
-        PRINTS("Byte "); PRINTH(i); PRINTS(": ");
-        PRINTH(bitmap[i]); 
-        PRINTLN;
-    }
 }
 

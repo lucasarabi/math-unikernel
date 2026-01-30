@@ -1,11 +1,10 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-#include "limine.h"
-
-#include "libmu/lib_mu.c" 
-#include "libmu/io_mu.c"
-#include "libmu/pmm_mu.c"
+#include "headers/limine.h"
+#include "headers/lib_mu.h"
+#include "headers/io_mu.h"
+#include "headers/pmm_mu.h"
 
 #define PRINTS write_serial_str
 #define PRINTH write_serial_hex

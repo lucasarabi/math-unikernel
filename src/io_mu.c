@@ -1,6 +1,7 @@
+#include "headers/io_mu.h"
+
 #define COM1 0x3f8
 #define LINE_STATUS_REG (COM1 + 5)
-
 
 static inline void outb(uint16_t port, uint8_t val) {
     __asm__ volatile ("outb %b0, %w1" :: "a"(val), "Nd"(port) : "memory");
@@ -30,13 +31,13 @@ static void write_serial(char a) {
     outb(COM1, a);
 }
 
-static void write_serial_str(const char* s) {
+void write_serial_str(const char* s) {
     for(int i = 0; s[i] != '\0'; i++) {
         write_serial(s[i]);
     }
 }
 
-static void write_serial_hex(uint64_t val) {
+void write_serial_hex(uint64_t val) {
     char* hex_chars = "0123456789ABCDEF";
 
     write_serial_str("0x");
