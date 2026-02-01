@@ -12,3 +12,7 @@
         -   System is completely headless; there is no framebuffer, hence the lack of display
         -   OS serial printer implementation prints data to serial port COM1. QEMU is printing to host system stdout.
         -   QEMU emulator has 512MB alloted for memory
+
+Build system by running in the following order:
+make -> ./build-iso.sh -> ./qemu.sh
+Reset with ./clean.sh
