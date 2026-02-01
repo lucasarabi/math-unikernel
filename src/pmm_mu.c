@@ -10,6 +10,9 @@
 #define PRINTLN write_serial_str("\n");
 
 
+#define PMM_UNINITIALIZED "ERROR: Physical memory manager has not been initialized"
+
+
 struct pmm_bitmap pmm;
 
 static uint64_t get_highest_usable_addr(struct limine_memmap_response* response) {
@@ -20,17 +23,10 @@ static uint64_t get_highest_usable_addr(struct limine_memmap_response* response)
     struct limine_memmap_entry** entries = response->entries;
     uint64_t largest_addr = 0;    
 
-    PRINTS("Exploring RAM...");
-    PRINTLN;
-    PRINTS("Number of memory map entries: ");
-    PRINTD(num_entries);
-    PRINTLN;
-
     for(uint64_t i = 0; i < num_entries; i++) {
         struct limine_memmap_entry* current = entries[i];
 
         if(current == NULL) {
-            PRINTS("Null entry. Skipping...\n");
             continue;
         }
 
@@ -39,10 +35,6 @@ static uint64_t get_highest_usable_addr(struct limine_memmap_response* response)
         if(current->type == LIMINE_MEMMAP_USABLE && ceiling > largest_addr) 
             largest_addr = ceiling;
     }
-
-    PRINTS("Largest usable address: ");
-    PRINTH(largest_addr);
-    PRINTLN;
 
     return largest_addr;
 }
@@ -74,12 +66,40 @@ static inline void free_frame(uint8_t* bitmap, uint64_t frame_index) {
 }
 
 
+void update_pmm_frame_count() {
+    if(pmm.bitmap == NULL) {
+        PRINTS(PMM_UNINITIALIZED); PRINTLN;
+        hcf();
+    }
+
+    uint8_t* bitmap = pmm.bitmap;
+    uint64_t total_frames = pmm.total_frames;
+
+    uint64_t num_free_frames = 0;
+    uint64_t num_claimed_frames = 0;
+
+    for (uint64_t frame = 0; frame < total_frames; frame++) {
+        uint64_t byte_index = frame / 8;
+        uint64_t bit_index = frame % 8;
+
+        if ((bitmap[byte_index] & (1 << bit_index)) == 0) num_free_frames++;
+        else num_claimed_frames++;
+    }
+    
+    pmm.total_free_frames = num_free_frames;
+    pmm.total_claimed_frames = num_claimed_frames;
+
+ }
+
+
 void pmm_init(struct limine_memmap_response* response) {
+
     const uint64_t num_entries = response->entry_count;
     struct limine_memmap_entry** entries = response->entries;
 
     uint64_t ceiling_addr = get_highest_usable_addr(response); 
     uint64_t total_frames = (ceiling_addr + 4095) / 4096;
+    pmm.total_frames = total_frames;
     uint64_t bitmap_size = (total_frames + 7) / 8;
 
     // Get start address -- earliest opening in usable physical memory
@@ -94,24 +114,20 @@ void pmm_init(struct limine_memmap_response* response) {
         }
     }
 
-    PRINTS("Bitmap start address: "); PRINTH((uint64_t)bitmap_start); PRINTLN;
-    PRINTS("Bitmap size: "); PRINTD(bitmap_size); PRINTLN;
-
-
     memset(bitmap_start, 0xFF, bitmap_size);
     uint8_t* bitmap = bitmap_start; 
+
+    pmm.bitmap = bitmap;
+    pmm.bitmap_size = bitmap_size;
 
     // Free up USABLE memory
     for(uint64_t i = 0; i < num_entries; i++) {
         struct limine_memmap_entry* current = entries[i];
-
         if(current->type == LIMINE_MEMMAP_USABLE) {
-
             for(uint64_t addr = current->base; addr < (current->base + current->length); addr += 4096) {
                 uint64_t frame_index = addr_to_index(addr);
                 free_frame(bitmap, frame_index); 
             }
-
         }
     }
 
@@ -121,22 +137,8 @@ void pmm_init(struct limine_memmap_response* response) {
         claim_frame(bitmap, frame_index);
     }
 
-    // DEBUG
-    uint64_t num_free_frames = 0;
-    uint64_t num_reserved_frames = 0;
+    update_pmm_frame_count();
 
-    for (uint64_t frame = 0; frame < total_frames; frame++) {
-        uint64_t byte_index = frame / 8;
-        uint64_t bit_index = frame % 8;
-
-        if ((bitmap[byte_index] & (1 << bit_index)) == 0) num_free_frames++;
-        else num_reserved_frames++;
-    }
-
-    PRINTS("Free frames: "); PRINTD(num_free_frames); PRINTLN;
-    PRINTS("Used frames: "); PRINTD(num_reserved_frames); PRINTLN;
-    
-    pmm.bitmap = bitmap;
-    pmm.bitmap_size = bitmap_size;
 }
+
 
