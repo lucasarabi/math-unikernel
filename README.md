@@ -1,5 +1,7 @@
 # math-unikernel
 
+Project Plan: https://docs.google.com/document/d/11_AAv_jsCrgcUY2xzpXuPdycS8RdtfFbQYkHFuwx74A/edit?usp=sharing
+
 ### Quick Guide on shell scripts in project root:
 - clean.sh
     -  Removes all build artifacts; this includes object files, ELF files, and ISOs.
