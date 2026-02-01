@@ -47,3 +47,22 @@ void write_serial_hex(uint64_t val) {
     }
 }
 
+void write_serial_dec(uint64_t val) {
+    if (val == 0) {
+        write_serial('0');
+        return;
+    }
+
+    char buffer[21]; 
+    int i = 0;
+
+    while (val > 0) {
+        buffer[i++] = (val % 10) + '0';
+        val /= 10;
+    }
+
+    for (int j = i - 1; j >= 0; j--) {
+        write_serial(buffer[j]);
+    }
+}
+

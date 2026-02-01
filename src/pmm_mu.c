@@ -5,6 +5,7 @@
 
 
 #define PRINTS write_serial_str
+#define PRINTD write_serial_dec
 #define PRINTH write_serial_hex
 #define PRINTLN write_serial_str("\n");
 
@@ -20,7 +21,7 @@ static uint64_t get_highest_usable_addr(struct limine_memmap_response* response)
     PRINTS("Exploring RAM...");
     PRINTLN;
     PRINTS("Number of memory map entries: ");
-    PRINTH(num_entries);
+    PRINTD(num_entries);
     PRINTLN;
 
     for(uint64_t i = 0; i < num_entries; i++) {
@@ -44,6 +45,7 @@ static uint64_t get_highest_usable_addr(struct limine_memmap_response* response)
     return largest_addr;
 }
 
+
 // addr refers to PHYSICAL MEMORY address
 static inline uint64_t addr_to_index(uint64_t addr) {
     return addr / 4096;
@@ -52,6 +54,7 @@ static inline uint64_t addr_to_index(uint64_t addr) {
 static inline uint64_t index_to_addr(uint64_t index) {
     return index * 4096;
 }
+
 
 static inline void claim_frame(uint8_t* bitmap, uint64_t frame_index) {
     uint64_t byte_index = frame_index / 8;
@@ -67,6 +70,7 @@ static inline void free_frame(uint8_t* bitmap, uint64_t frame_index) {
 
     bitmap[byte_index] &= ~(1 << bit_index);
 }
+
 
 void pmm_init(struct limine_memmap_response* response) {
     const uint64_t num_entries = response->entry_count;
@@ -88,13 +92,8 @@ void pmm_init(struct limine_memmap_response* response) {
         }
     }
 
-    PRINTS("Bitmap start address: ");    
-    PRINTH((uint64_t)bitmap_start);
-    PRINTLN;
-
-    PRINTS("Bitmap size: ");    
-    PRINTH(bitmap_size);
-    PRINTLN;
+    PRINTS("Bitmap start address: "); PRINTH((uint64_t)bitmap_start); PRINTLN;
+    PRINTS("Bitmap size: "); PRINTD(bitmap_size); PRINTLN;
 
 
     memset(bitmap_start, 0xFF, bitmap_size);
@@ -120,5 +119,19 @@ void pmm_init(struct limine_memmap_response* response) {
         claim_frame(bitmap, frame_index);
     }
 
+    // DEBUG
+    uint64_t num_free_frames = 0;
+    uint64_t num_reserved_frames = 0;
+
+    for (uint64_t frame = 0; frame < total_frames; frame++) {
+        uint64_t byte_index = frame / 8;
+        uint64_t bit_index = frame % 8;
+
+        if ((bitmap[byte_index] & (1 << bit_index)) == 0) num_free_frames++;
+        else num_reserved_frames++;
+    }
+
+    PRINTS("Free frames: "); PRINTD(num_free_frames); PRINTLN;
+    PRINTS("Used frames: "); PRINTD(num_reserved_frames); PRINTLN;
 }
 
