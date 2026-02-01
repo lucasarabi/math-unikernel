@@ -40,7 +40,8 @@ clean:
 	rm -f $(OBJS) $(KERNEL)
 	rm -rf iso_root $(ISO_IMAGE)
 
-ISO_IMAGE = image.iso
+ISO_IMAGE = unikernel.iso
+LIMINE_DIR = $(shell brew --prefix)/share/limine
 
 .PHONY: all clean iso
 
@@ -48,6 +49,8 @@ ISO_IMAGE = image.iso
 iso: $(KERNEL)
 	mkdir -p iso_root/boot/
 	cp $(KERNEL) iso_root/boot/
+	cp $(LIMINE_DIR)/limine-bios-cd.bin iso_root/
+	cp $(LIMINE_DIR)/limine-uefi-cd.bin iso_root/
 	xorriso -as mkisofs -b limine-bios-cd.bin \
 		-no-emul-boot -boot-load-size 4 -boot-info-table \
 		--efi-boot limine-uefi-cd.bin \
