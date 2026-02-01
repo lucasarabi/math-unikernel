@@ -50,7 +50,7 @@ void kernel_main(void) {
         hcf();
     }
 
-    PRINTS("Limine handshake successful\n");
+    PRINTS("Limine handshake successful\n"); 
 
     pmm_init(memmap_request.response); 
 

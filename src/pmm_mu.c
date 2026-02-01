@@ -10,6 +10,8 @@
 #define PRINTLN write_serial_str("\n");
 
 
+struct pmm_bitmap pmm;
+
 static uint64_t get_highest_usable_addr(struct limine_memmap_response* response) {
 
     if(response->entries == NULL) return 0;
@@ -133,5 +135,8 @@ void pmm_init(struct limine_memmap_response* response) {
 
     PRINTS("Free frames: "); PRINTD(num_free_frames); PRINTLN;
     PRINTS("Used frames: "); PRINTD(num_reserved_frames); PRINTLN;
+    
+    pmm.bitmap = bitmap;
+    pmm.bitmap_size = bitmap_size;
 }
 

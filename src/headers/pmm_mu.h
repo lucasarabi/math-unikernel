@@ -13,6 +13,8 @@ struct pmm_bitmap {
 // TO-DO -- expose bitmap by making it global variable
 // extern struct pmm_bitmap mu_pmm;
 
+extern struct pmm_bitmap pmm;
+
 void pmm_init(struct limine_memmap_response* response);
 
 #endif
