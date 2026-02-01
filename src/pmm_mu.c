@@ -82,6 +82,8 @@ void update_pmm_frame_count() {
         uint64_t byte_index = frame / 8;
         uint64_t bit_index = frame % 8;
 
+        // Below is the logic to determine frame status!
+        // TODO -- abstract this logic to function. Contruct pmm API using these as well as free_frame and claim_frame
         if ((bitmap[byte_index] & (1 << bit_index)) == 0) num_free_frames++;
         else num_claimed_frames++;
     }
