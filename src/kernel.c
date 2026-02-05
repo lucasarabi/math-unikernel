@@ -64,6 +64,11 @@ void kernel_main(void) {
     PRINTF("PMM total frames:", pmm.total_frames);
     PRINTF("PMM free frames:", pmm.free_frames);
     PRINTF("PMM used frames:", pmm.total_frames - pmm.free_frames);
+    pmm_alloc();
+    pmm_alloc();
+    pmm_alloc();
+    pmm_alloc();
+    pmm_alloc();
 
     PRINTS(KERNEL_FINISH);
     hcf();

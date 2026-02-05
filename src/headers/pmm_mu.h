@@ -18,5 +18,6 @@ struct pmm_bitmap {
 extern struct pmm_bitmap pmm;
 
 void pmm_init(struct limine_memmap_response* response, uint64_t hhdm_offset);
+void* pmm_alloc();
 
 #endif

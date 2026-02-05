@@ -14,6 +14,6 @@ qemu-system-x86_64 \
     -drive file="$ISO_NAME",format=raw \
     -serial stdio \
     -display none \
-    -m 512M \
+    -m 1024M \
     -no-reboot \
     -no-shutdown \

@@ -8,19 +8,18 @@
 #define PRINTD write_serial_dec
 #define PRINTH write_serial_hex
 #define PRINTLN write_serial_str("\n");
-
+#define PRINTF(str, val) PRINTS(str); PRINTS(" "); PRINTD(val); PRINTLN;
 
 #define PMM_UNINITIALIZED "ERROR: Physical memory manager has not been initialized"
 
 
 struct pmm_bitmap pmm;
 
-// addr refers to PHYSICAL MEMORY address
-static inline uint64_t addr_to_index(uint64_t addr) {
+static inline uint64_t phys_addr_to_index(uint64_t addr) {
     return addr / 4096;
 }
 
-static inline uint64_t index_to_addr(uint64_t index) {
+static inline uint64_t index_to_phys_addr(uint64_t index) {
     return index * 4096;
 }
 
@@ -42,7 +41,6 @@ static inline void free_frame(uint8_t* bitmap, uint64_t frame_index) {
         pmm.free_frames++;
     }
 }
-
 
 static uint64_t get_highest_usable_addr(struct limine_memmap_response* response) {
 
@@ -67,7 +65,6 @@ static uint64_t get_highest_usable_addr(struct limine_memmap_response* response)
 
     return largest_addr;
 }
-
 
 void pmm_init(struct limine_memmap_response* response, uint64_t hhdm_offset) {
 
@@ -100,22 +97,51 @@ void pmm_init(struct limine_memmap_response* response, uint64_t hhdm_offset) {
     pmm.total_frames = total_frames;
     pmm.free_frames = 0;
 
-    // Free up USABLE memory
     for(uint64_t i = 0; i < num_entries; i++) {
         struct limine_memmap_entry* current = entries[i];
         if(current->type == LIMINE_MEMMAP_USABLE) {
             for(uint64_t addr = current->base; addr < (current->base + current->length); addr += 4096) {
-                uint64_t frame_index = addr_to_index(addr);
+                uint64_t frame_index = phys_addr_to_index(addr);
                 free_frame(bitmap, frame_index); 
             }
         }
     }
 
-    // Reclaim memory address storing pmm bitmap
     for(uint64_t addr = bitmap_physical_addr; addr < (bitmap_physical_addr + bitmap_size); addr += 4096) {
-        uint64_t frame_index = addr_to_index(addr);
+        uint64_t frame_index = phys_addr_to_index(addr);
         claim_frame(bitmap, frame_index);
     }
 }
 
+void* pmm_alloc() {
+    uint8_t* bitmap = pmm.bitmap;
+    uint64_t bitmap_size = pmm.bitmap_size;
+    uint64_t total_frames = pmm.total_frames;
+
+    uint64_t byte_index = 0;
+    while(byte_index < bitmap_size && bitmap[byte_index] == 0xff) {
+        byte_index++;
+    }
+
+    if(byte_index >= bitmap_size) return NULL;
+    
+    uint8_t bit_index = 0;
+    while(bitmap[byte_index] & (1 << bit_index)) {
+        bit_index++;
+    }
+    
+    // DEBUG
+    PRINTS("Byte index: "); PRINTD(byte_index);
+    PRINTS(" Bit index: "); PRINTD(bit_index); 
+    PRINTLN;
+
+    uint64_t frame_index = (byte_index * 8) + bit_index; 
+
+    if(frame_index >= total_frames) return NULL;
+    
+    claim_frame(bitmap, frame_index);
+
+    return (uint8_t*) index_to_phys_addr(frame_index);
+
+}
 
