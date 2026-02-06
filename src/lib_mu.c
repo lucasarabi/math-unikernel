@@ -11,9 +11,11 @@ void* memcpy(void* restrict dest, const void* restrict src, size_t n) {
     return dest;
 }
 
-// s is start addr
-// c is memset value
-// n is number of bytes
+/*
+ * s is start addr
+ * c is memset value
+ * is number of bytes
+ */
 void* memset(void* s, uint8_t c, size_t n) {
     uint8_t* p = (uint8_t*)s;
 
