@@ -12,12 +12,11 @@ struct pmm_bitmap {
     uint64_t free_frames;
 };
 
-// TO-DO -- expose bitmap by making it global variable
-// extern struct pmm_bitmap mu_pmm;
-
 extern struct pmm_bitmap pmm;
 
+// Physical Memory Manager API
 void pmm_init(struct limine_memmap_response* response, uint64_t hhdm_offset);
-void* pmm_alloc();
+uint64_t pmm_alloc();
+void pmm_free(uint64_t phys_addr);
 
 #endif

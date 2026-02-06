@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include "headers/pmm_mu.h"
 #include "headers/limine.h"
 #include "headers/lib_mu.h"
@@ -113,7 +114,7 @@ void pmm_init(struct limine_memmap_response* response, uint64_t hhdm_offset) {
     }
 }
 
-void* pmm_alloc() {
+uint64_t pmm_alloc() {
     uint8_t* bitmap = pmm.bitmap;
     uint64_t bitmap_size = pmm.bitmap_size;
     uint64_t total_frames = pmm.total_frames;
@@ -123,7 +124,7 @@ void* pmm_alloc() {
         byte_index++;
     }
 
-    if(byte_index >= bitmap_size) return NULL;
+    if(byte_index >= bitmap_size) return -1;
     
     uint8_t bit_index = 0;
     while(bitmap[byte_index] & (1 << bit_index)) {
@@ -137,11 +138,16 @@ void* pmm_alloc() {
 
     uint64_t frame_index = (byte_index * 8) + bit_index; 
 
-    if(frame_index >= total_frames) return NULL;
+    if(frame_index >= total_frames) return -1;
     
     claim_frame(bitmap, frame_index);
 
-    return (uint8_t*) index_to_phys_addr(frame_index);
-
+    return index_to_phys_addr(frame_index);
 }
 
+void pmm_free(uint64_t phys_addr) {
+    uint8_t* bitmap = pmm.bitmap;
+
+    uint64_t frame_index = phys_addr_to_index(phys_addr); 
+    free_frame(bitmap, frame_index);
+}
