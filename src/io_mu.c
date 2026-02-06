@@ -66,3 +66,20 @@ void write_serial_dec(uint64_t val) {
     }
 }
 
+void write_serial_bin(uint32_t val, uint8_t bits) {
+    if (bits > 32) bits = 32; 
+
+    write_serial_str("0b");
+
+    for (int i = bits - 1; i >= 0; i--) {
+        if (val & (1U << i)) {
+            write_serial('1');
+        } else {
+            write_serial('0');
+        }
+
+        if (i > 0 && i % 4 == 0) {
+            write_serial('_');
+        }
+    }
+}

@@ -9,8 +9,9 @@
 #define PRINTS write_serial_str
 #define PRINTH write_serial_hex
 #define PRINTD write_serial_dec
+#define PRINTB(val) write_serial_bin(val, 8)
 #define PRINTLN write_serial_str("\n");
-#define PRINTF(str, val) PRINTS(str); PRINTS(" "); PRINTD(val); PRINTLN;
+#define PRINTF(str, val) PRINTS(str); PRINTS("\t"); PRINTD(val); PRINTS("\t");
 
 #define MEMMAP_REQUEST_FAILURE "ERROR: memmap request failed.\n"
 #define HHDM_REQUEST_FAILURE "ERROR: hhdm request failed.\n"
@@ -61,10 +62,9 @@ void kernel_main(void) {
     PRINTS(LIMINE_HANDSHAKE_SUCCESS); 
 
     pmm_init(memmap_request.response, hhdm_request.response->offset); 
-    PRINTF("PMM total frames:", pmm.total_frames);
-    PRINTF("PMM free frames:", pmm.free_frames);
-    PRINTF("PMM used frames:", pmm.total_frames - pmm.free_frames);
-
+    PRINTF("PMM total frames:", pmm.total_frames); PRINTLN;
+    PRINTF("PMM free frames:", pmm.free_frames); PRINTLN;
+    PRINTF("PMM used frames:", pmm.total_frames - pmm.free_frames); PRINTLN;
 
     PRINTS(KERNEL_FINISH);
     hcf();
