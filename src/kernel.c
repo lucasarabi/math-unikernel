@@ -22,7 +22,6 @@
 __attribute__((used, section(".limine_requests")))
 static volatile LIMINE_BASE_REVISION(0);
 
-
 __attribute__((used, section(".limine_requests_start")))
 static volatile LIMINE_REQUESTS_START_MARKER;
 
