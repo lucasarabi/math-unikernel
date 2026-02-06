@@ -12,6 +12,7 @@
 #define PRINTF(str, val) PRINTS(str); PRINTS(" "); PRINTD(val); PRINTLN;
 
 #define PMM_UNINITIALIZED "ERROR: Physical memory manager has not been initialized"
+#define PMM_MISALIGNMENT "ERROR: Attempted to free unaligned address. Pages but be aligned to 1kb (4096 bits)"
 
 
 struct pmm_bitmap pmm;
@@ -124,7 +125,7 @@ uint64_t pmm_alloc() {
         byte_index++;
     }
 
-    if(byte_index >= bitmap_size) return -1;
+    if(byte_index >= bitmap_size) return 0;
     
     uint8_t bit_index = 0;
     while(bitmap[byte_index] & (1 << bit_index)) {
@@ -138,7 +139,7 @@ uint64_t pmm_alloc() {
 
     uint64_t frame_index = (byte_index * 8) + bit_index; 
 
-    if(frame_index >= total_frames) return -1;
+    if(frame_index >= total_frames) return 0;
     
     claim_frame(bitmap, frame_index);
 
@@ -146,6 +147,11 @@ uint64_t pmm_alloc() {
 }
 
 void pmm_free(uint64_t phys_addr) {
+    if((phys_addr & 0xfff) != 0) {
+        PRINTS(PMM_MISALIGNMENT); PRINTLN;
+        return;
+    }
+
     uint8_t* bitmap = pmm.bitmap;
 
     uint64_t frame_index = phys_addr_to_index(phys_addr); 
