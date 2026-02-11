@@ -121,6 +121,8 @@ uint64_t pmm_alloc() {
     uint64_t total_frames = pmm.total_frames;
 
     uint64_t byte_index = 0;
+
+    // Next fit
     while(byte_index < bitmap_size && bitmap[byte_index] == 0xff) {
         byte_index++;
     }
@@ -131,17 +133,18 @@ uint64_t pmm_alloc() {
     while(bitmap[byte_index] & (1 << bit_index)) {
         bit_index++;
     }
-    
-    // DEBUG
-    PRINTS("Byte index: "); PRINTD(byte_index);
-    PRINTS(" Bit index: "); PRINTD(bit_index); 
-    PRINTLN;
 
     uint64_t frame_index = (byte_index * 8) + bit_index; 
 
     if(frame_index >= total_frames) return 0;
     
     claim_frame(bitmap, frame_index);
+
+    // DEBUG
+    PRINTS("(PMM) ");
+    PRINTS("Byte index: "); PRINTD(byte_index);
+    PRINTS(" Bit index: "); PRINTD(bit_index); 
+    PRINTLN;
 
     return index_to_phys_addr(frame_index);
 }
@@ -156,4 +159,7 @@ void pmm_free(uint64_t phys_addr) {
 
     uint64_t frame_index = phys_addr_to_index(phys_addr); 
     free_frame(bitmap, frame_index);
+
+    PRINTS("(PMM) ");
+    PRINTF("Freeing frame index: ", frame_index);
 }

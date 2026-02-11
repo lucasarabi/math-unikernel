@@ -6,6 +6,7 @@
 #include "headers/lib_mu.h"
 #include "headers/io_mu.h"
 #include "headers/pmm_mu.h"
+#include "headers/vmm_mu.h"
 
 #define PRINTS write_serial_str
 #define PRINTH write_serial_hex
@@ -69,6 +70,10 @@ void kernel_main(void) {
     PRINTF("PMM total frames:", pmm.total_frames); PRINTLN;
     PRINTF("PMM free frames:", pmm.free_frames); PRINTLN;
     PRINTF("PMM used frames:", pmm.total_frames - pmm.free_frames); PRINTLN;
+
+    pmm_free(pmm_alloc());
+
+    test_vmm_logic();
 
     PRINTS(KERNEL_FINISH);
     hcf();
