@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include "headers/limine.h"
+#include "headers/hhdm_offset.h"
 #include "headers/lib_mu.h"
 #include "headers/io_mu.h"
 #include "headers/pmm_mu.h"
@@ -42,6 +43,8 @@ static volatile struct limine_hhdm_request hhdm_request = {
     .response = NULL   
 };
 
+uint64_t hhdm_offset;
+
 void kernel_main(void) {
     
     serial_init(); 
@@ -60,7 +63,9 @@ void kernel_main(void) {
 
     PRINTS(LIMINE_HANDSHAKE_SUCCESS); 
 
-    pmm_init(memmap_request.response, hhdm_request.response->offset); 
+    hhdm_offset = hhdm_request.response->offset;
+
+    pmm_init(memmap_request.response); 
     PRINTF("PMM total frames:", pmm.total_frames); PRINTLN;
     PRINTF("PMM free frames:", pmm.free_frames); PRINTLN;
     PRINTF("PMM used frames:", pmm.total_frames - pmm.free_frames); PRINTLN;

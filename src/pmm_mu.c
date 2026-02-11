@@ -2,6 +2,7 @@
 #include "headers/limine.h"
 #include "headers/lib_mu.h"
 #include "headers/io_mu.h"
+#include "headers/hhdm_offset.h"
 
 
 #define PRINTS write_serial_str
@@ -67,7 +68,7 @@ static uint64_t get_highest_usable_addr(struct limine_memmap_response* response)
     return largest_addr;
 }
 
-void pmm_init(struct limine_memmap_response* response, uint64_t hhdm_offset) {
+void pmm_init(struct limine_memmap_response* response) {
 
     const uint64_t num_entries = response->entry_count;
     struct limine_memmap_entry** entries = response->entries;

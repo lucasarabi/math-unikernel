@@ -16,7 +16,7 @@ struct pmm_context {
 extern struct pmm_context pmm;
 
 // Physical Memory Manager API
-void pmm_init(struct limine_memmap_response* response, uint64_t hhdm_offset);
+void pmm_init(struct limine_memmap_response* response);
 uint64_t pmm_alloc();
 void pmm_free(uint64_t phys_addr);
 

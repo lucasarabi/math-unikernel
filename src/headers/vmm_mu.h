@@ -14,4 +14,6 @@ struct vmm_context {
     uintptr_t pml4_phys;                            // To be loaded into CR3 register
 };
 
+extern struct vmm_context vmm;
+
 #endif

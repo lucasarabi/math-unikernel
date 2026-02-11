@@ -1,4 +1,5 @@
 #include "headers/vmm_mu.h"
+#include "headers/pmm_mu.h"
 #include "headers/io_mu.h"
 
 #define PRINTS write_serial_str
@@ -37,3 +38,27 @@
     Shifting RIGHT will give the binary of the exact value to process. 
     Compare it to 0x1ff (= 0b111111111 = 511)
 */
+
+
+struct vmm_context vmm; 
+
+void page_walk(uint64_t virt_addr) {
+
+    page_table_t* current_table = vmm.pml4_virt;
+
+    for(int level = 3; level >= 0; level--) {
+        uint64_t index = (virt_addr >> (12 + (level*9))) & VMM_INDEX_MASK; 
+
+        pt_entry_t entry = current_table->entries[index];
+        
+        if(level > 0) {
+            if(!(entry & VMM_PRESENT)) {
+                entry = pmm_alloc();
+
+                // TODO continue page walk
+
+            }
+        }
+    }
+
+}
