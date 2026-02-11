@@ -1,5 +1,5 @@
-#include <stdint.h>
 #include "headers/vmm_mu.h"
+#include "headers/io_mu.h"
 
 #define PRINTS write_serial_str
 #define PRINTD write_serial_dec
@@ -13,9 +13,16 @@
 #define PT_SHIFT        12
 #define VMM_INDEX_MASK  0x1FF 
 
-#define VMM_PRESENT     (1ULL << 0)
-#define VMM_WRITEABLE   (1ULL << 1)
-#define VMM_HUGE        (1ULL << 7)
+#define VMM_PRESENT         (1ULL << 0)
+#define VMM_WRITEABLE       (1ULL << 1)
+#define VMM_CACHE_DISABLE   (1ULL << 4)
+#define VMM_ACCESSED        (1ULL << 5)
+#define VMM_DIRTY           (1ULL << 6)
+#define VMM_HUGE            (1ULL << 7)
+#define VMM_NO_EXEC         (1ULL << 63)
+
+#define VMM_ADDR_MASK  0x000FFFFFFFFFF000ULL
+#define VMM_GET_ADDR(entry) ((entry) & VMM_ADDR_MASK)
 
 // TODO implement page walk
 /*

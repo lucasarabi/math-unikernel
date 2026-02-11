@@ -1,4 +1,3 @@
-#include <stdbool.h>
 #include "headers/pmm_mu.h"
 #include "headers/limine.h"
 #include "headers/lib_mu.h"
@@ -15,7 +14,7 @@
 #define PMM_MISALIGNMENT    "ERROR: Attempted to free unaligned address. Pages but be aligned to 1kb (4096 bits)"
 
 
-struct pmm_bitmap pmm;
+struct pmm_context pmm;
 
 static inline uint64_t phys_addr_to_index(uint64_t addr) {
     return addr / 4096;
