@@ -1,5 +1,7 @@
 #include "headers/vmm_mu.h"
 #include "headers/pmm_mu.h"
+#include "headers/lib_mu.h"
+#include "headers/hhdm_offset.h"
 #include "headers/io_mu.h"
 
 #define PRINTS write_serial_str
@@ -53,12 +55,21 @@ void page_walk(uint64_t virt_addr) {
         
         if(level > 0) {
             if(!(entry & VMM_PRESENT)) {
-                entry = pmm_alloc();
+                uint64_t new_table_phys = pmm_alloc();
 
-                // TODO continue page walk
+                page_table_t* new_table_virt = (page_table_t*)(new_table_phys + hhdm_offset);
+                memset(new_table_virt, 0 , 4096);
+            
+                current_table->entries[index] = new_table_phys | VMM_PRESENT | VMM_WRITEABLE;
+
+                entry = current_table->entries[index];
+
+                // Bad logic here. Fix?
 
             }
+
         }
+
     }
 
 }
