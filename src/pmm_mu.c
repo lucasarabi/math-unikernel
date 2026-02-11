@@ -11,8 +11,8 @@
 #define PRINTLN write_serial_str("\n");
 #define PRINTF(str, val) PRINTS(str); PRINTS(" "); PRINTD(val); PRINTLN;
 
-#define PMM_UNINITIALIZED "ERROR: Physical memory manager has not been initialized"
-#define PMM_MISALIGNMENT "ERROR: Attempted to free unaligned address. Pages but be aligned to 1kb (4096 bits)"
+#define PMM_UNINITIALIZED   "ERROR: Physical memory manager has not been initialized"
+#define PMM_MISALIGNMENT    "ERROR: Attempted to free unaligned address. Pages but be aligned to 1kb (4096 bits)"
 
 
 struct pmm_bitmap pmm;

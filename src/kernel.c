@@ -13,11 +13,11 @@
 #define PRINTLN write_serial_str("\n");
 #define PRINTF(str, val) PRINTS(str); PRINTS("\t"); PRINTD(val); PRINTS("\t");
 
-#define MEMMAP_REQUEST_FAILURE "ERROR: memmap request failed.\n"
-#define HHDM_REQUEST_FAILURE "ERROR: hhdm request failed.\n"
+#define MEMMAP_REQUEST_FAILURE  "ERROR: memmap request failed.\n"
+#define HHDM_REQUEST_FAILURE    "ERROR: hhdm request failed.\n"
 
-#define LIMINE_HANDSHAKE_SUCCESS "Limine handshake successful.\n"
-#define KERNEL_FINISH "Finished kernel execution. Exiting.\n"
+#define LIMINE_HANDSHAKE_SUCCESS    "Limine handshake successful.\n"
+#define KERNEL_FINISH   "Finished kernel execution. Exiting.\n"
 
 __attribute__((used, section(".limine_requests")))
 static volatile LIMINE_BASE_REVISION(0);
