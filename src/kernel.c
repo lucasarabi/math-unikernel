@@ -15,8 +15,9 @@
 #define PRINTLN write_serial_str("\n");
 #define PRINTF(str, val) PRINTS(str); PRINTS("\t"); PRINTD(val); PRINTS("\t");
 
-#define MEMMAP_REQUEST_FAILURE  "ERROR: memmap request failed.\n"
-#define HHDM_REQUEST_FAILURE    "ERROR: hhdm request failed.\n"
+#define MEMMAP_REQUEST_FAILURE      "ERROR: memmap request failed.\n"
+#define HHDM_REQUEST_FAILURE        "ERROR: hhdm request failed.\n"
+#define KERNEL_ADDR_REQUEST_FAILURE "ERROR: kernel address request failed.\n"
 
 #define LIMINE_HANDSHAKE_SUCCESS    "Limine handshake successful.\n"
 #define KERNEL_FINISH   "Finished kernel execution. Exiting.\n"
@@ -44,6 +45,13 @@ static volatile struct limine_hhdm_request hhdm_request = {
     .response = NULL   
 };
 
+__attribute__((used, section(".limine_requests")))
+static volatile struct limine_kernel_address_request kernel_addr_request = {
+    .id = LIMINE_KERNEL_ADDRESS_REQUEST,
+    .revision = 0,
+    .response = NULL
+};
+
 uint64_t hhdm_offset;
 
 void kernel_main(void) {
@@ -61,6 +69,10 @@ void kernel_main(void) {
         PRINTS(HHDM_REQUEST_FAILURE);
         hcf();
     }
+    if(kernel_addr_request.response == NULL) {
+        PRINTS(KERNEL_ADDR_REQUEST_FAILURE);
+        hcf();
+    }
 
     PRINTS(LIMINE_HANDSHAKE_SUCCESS); 
 
@@ -71,8 +83,10 @@ void kernel_main(void) {
     PRINTF("PMM free frames:", pmm.free_frames); PRINTLN;
     PRINTF("PMM used frames:", pmm.total_frames - pmm.free_frames); PRINTLN;
 
-    vmm_init();
+    vmm_init(kernel_addr_request.response, memmap_request.response);
     PRINTS("VMM Initialized. Physical address: "); PRINTH(vmm.pml4_phys); PRINTLN;
+
+    vmm_activate();
 
     PRINTS(KERNEL_FINISH);
     hcf();

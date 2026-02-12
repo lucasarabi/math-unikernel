@@ -18,6 +18,8 @@
 #define VMM_INDEX_MASK  0x1FF 
 #define VMM_GET_ADDR(entry) ((entry) & VMM_ADDR_MASK)
 
+struct limine_kernel_address_response;
+
 typedef uint64_t pt_entry_t; // Stores phys addr of next table
 
 typedef struct {
@@ -31,8 +33,10 @@ struct vmm_context {
 
 extern struct vmm_context vmm;
 
-void vmm_init();
+// Virtual memory manmager API
 void vmm_map_virt_to_phys(uint64_t virt_addr, uint64_t phys_addr, uint64_t flags);
-void test_vmm_logic();
+void vmm_map_range(uint64_t virt_start, uint64_t phys_start, uint64_t size, uint64_t flags);
+void vmm_init(struct limine_kernel_address_response* kernel_addr_response, struct limine_memmap_response* memmap_response);
+void vmm_activate();
 
 #endif

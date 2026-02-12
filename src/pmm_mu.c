@@ -140,12 +140,6 @@ uint64_t pmm_alloc() {
     
     claim_frame(bitmap, frame_index);
 
-    // DEBUG
-    PRINTS("(PMM) ");
-    PRINTS("Byte index: "); PRINTD(byte_index);
-    PRINTS(" Bit index: "); PRINTD(bit_index); 
-    PRINTLN;
-
     return index_to_phys_addr(frame_index);
 }
 

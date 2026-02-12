@@ -1,3 +1,4 @@
+#include "headers/limine.h"
 #include "headers/vmm_mu.h"
 #include "headers/pmm_mu.h"
 #include "headers/lib_mu.h"
@@ -15,24 +16,22 @@
 #define PD_SHIFT        21
 #define PT_SHIFT        12
 
+#define KIB (1024ULL)  
+#define MIB (1024ULL * KIB)  
+#define GIB (1024ULL * MIB)  
+#define RAM_SIZE 512 * MIB 
+
+#define CR3_LOADED "VMM PML4 has been loaded to CR3 register.\n"
+
 struct vmm_context vmm; 
 
-void vmm_init() {
+static void vmm_prep_pml4() {
     vmm.pml4_phys = pmm_alloc();
     vmm.pml4_virt = (page_table_t*)(vmm.pml4_phys + hhdm_offset);
     memset(vmm.pml4_virt, 0, 4096);
 }
 
 void vmm_map_virt_to_phys(uint64_t virt_addr, uint64_t phys_addr, uint64_t flags) {
-
-    // Sanity check -- check if PLM4 is initialized
-    PRINTS("Checking root pointer: "); 
-    PRINTH((uint64_t)vmm.pml4_virt); PRINTLN;
-    if(vmm.pml4_virt == 0) {
-       PRINTS("(ERROR) vmm.pml4_virt is NULL!\n");
-       return;
-    }
-
     page_table_t* current_table = vmm.pml4_virt;
 
     for(int level = 3; level >= 0; level--) {
@@ -64,4 +63,39 @@ void vmm_map_virt_to_phys(uint64_t virt_addr, uint64_t phys_addr, uint64_t flags
             current_table->entries[index] = (phys_addr & VMM_ADDR_MASK) | flags | VMM_PRESENT;
         }
     }
+}
+
+void vmm_map_range(uint64_t virt_start, uint64_t phys_start, uint64_t size, uint64_t flags) {
+    for(uint64_t offset = 0; offset < size; offset += 4096) {
+        vmm_map_virt_to_phys(virt_start + offset, phys_start + offset, flags);
+    }
+}
+
+void vmm_init(struct limine_kernel_address_response* kernel_addr_response, struct limine_memmap_response* memmap_response) {
+    vmm_prep_pml4();
+    
+    // Identity map first 4MB
+    vmm_map_range(0x0, 0x0, 0x400000, VMM_PRESENT | VMM_WRITEABLE);
+
+    uint64_t kernel_size = 0;
+    for(uint64_t i = 0; i < memmap_response->entry_count; i++) {
+        struct limine_memmap_entry* entry = memmap_response->entries[i];
+        if(entry->type == LIMINE_MEMMAP_KERNEL_AND_MODULES) {
+            kernel_size = entry->length;
+            break;
+        }
+    }
+
+    // TODO -- use memmap response to get total RAM size dynamically instead of hard coding
+    // Map kernel
+    vmm_map_range(kernel_addr_response->virtual_base, kernel_addr_response->physical_base, kernel_size, VMM_PRESENT | VMM_WRITEABLE);
+
+    // Map HHDM
+    vmm_map_range(hhdm_offset, 0x0, RAM_SIZE, VMM_PRESENT | VMM_WRITEABLE);
+
+}
+
+void vmm_activate() {
+    __asm__ volatile ("mov %0, %%cr3" :: "r"(vmm.pml4_phys) : "memory");
+    PRINTS(CR3_LOADED);
 }
