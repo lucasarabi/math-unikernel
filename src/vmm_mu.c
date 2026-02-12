@@ -11,10 +11,10 @@
 #define PRINTLN write_serial_str("\n");
 #define PRINTF(str, val) PRINTS(str); PRINTS(" "); PRINTD(val);
 
-#define PML4_SHIFT      39
-#define PDPT_SHIFT      30
-#define PD_SHIFT        21
-#define PT_SHIFT        12
+#define PML4_SHIFT 39
+#define PDPT_SHIFT 30
+#define PD_SHIFT   21
+#define PT_SHIFT   12
 
 #define KIB (1024ULL)  
 #define MIB (1024ULL * KIB)  
@@ -85,4 +85,19 @@ void vmm_init(struct limine_kernel_address_response* kernel_addr_response, struc
 void vmm_activate() {
     __asm__ volatile ("mov %0, %%cr3" :: "r"(vmm.pml4_phys) : "memory");
     PRINTS(CR3_LOADED);
+}
+
+uint64_t next_virt_addr = 0xffff900000000000;
+void* vmm_alloc(uint64_t num_pages, uint64_t flags) {
+    void* start_addr = (void*)next_virt_addr;
+
+    for(int i = 0; i < num_pages; i++) {
+        uint64_t phys_addr = pmm_alloc();
+        vmm_map_virt_to_phys(next_virt_addr, phys_addr, flags);
+        memset((void*)next_virt_addr, 0, 4096);
+
+        next_virt_addr += 4096;
+    }
+    
+    return start_addr;
 }

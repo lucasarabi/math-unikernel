@@ -38,5 +38,6 @@ void vmm_map_virt_to_phys(uint64_t virt_addr, uint64_t phys_addr, uint64_t flags
 void vmm_map_range(uint64_t virt_start, uint64_t phys_start, uint64_t size, uint64_t flags);
 void vmm_init(struct limine_kernel_address_response* kernel_addr_response, struct limine_memmap_response* memmap_response);
 void vmm_activate();
+void* vmm_alloc(uint64_t num_pages, uint64_t flags);
 
 #endif
