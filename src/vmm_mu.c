@@ -38,27 +38,20 @@ void vmm_map_virt_to_phys(uint64_t virt_addr, uint64_t phys_addr, uint64_t flags
         uint64_t index = (virt_addr >> (12 + (level*9))) & VMM_INDEX_MASK; 
         pt_entry_t entry = current_table->entries[index];
 
-        // If NOT leaf node (PML4, PDPT, PD)
         if(level > 0) {
-            // If not present, create table
             if(!(entry & VMM_PRESENT)) {
                 uint64_t new_table_phys = pmm_alloc();
 
-                // Zero out virtual page
                 page_table_t* new_table_virt = (page_table_t*)(new_table_phys + hhdm_offset);
                 memset(new_table_virt, 0 , 4096);
             
-                // Add new phys table address to current table map
                 current_table->entries[index] = new_table_phys | VMM_PRESENT | VMM_WRITEABLE;
                 
-                // Table is now present. Switch entry to new phys table addr before shifting down table
                 entry = current_table->entries[index];
 
             }
-            // Shift current table down
             current_table = (page_table_t*)(VMM_GET_ADDR(entry) + hhdm_offset);
         } 
-        // leaf node (PT)
         else {
             current_table->entries[index] = (phys_addr & VMM_ADDR_MASK) | flags | VMM_PRESENT;
         }
@@ -74,25 +67,19 @@ void vmm_map_range(uint64_t virt_start, uint64_t phys_start, uint64_t size, uint
 void vmm_init(struct limine_kernel_address_response* kernel_addr_response, struct limine_memmap_response* memmap_response) {
     vmm_prep_pml4();
     
-    // Identity map first 4MB
     vmm_map_range(0x0, 0x0, 0x400000, VMM_PRESENT | VMM_WRITEABLE);
 
     uint64_t kernel_size = 0;
     for(uint64_t i = 0; i < memmap_response->entry_count; i++) {
         struct limine_memmap_entry* entry = memmap_response->entries[i];
-        if(entry->type == LIMINE_MEMMAP_KERNEL_AND_MODULES) {
+
+        if(entry->type == LIMINE_MEMMAP_KERNEL_AND_MODULES) 
             kernel_size = entry->length;
-            break;
-        }
     }
 
-    // TODO -- use memmap response to get total RAM size dynamically instead of hard coding
-    // Map kernel
     vmm_map_range(kernel_addr_response->virtual_base, kernel_addr_response->physical_base, kernel_size, VMM_PRESENT | VMM_WRITEABLE);
 
-    // Map HHDM
     vmm_map_range(hhdm_offset, 0x0, RAM_SIZE, VMM_PRESENT | VMM_WRITEABLE);
-
 }
 
 void vmm_activate() {
