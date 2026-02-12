@@ -71,9 +71,8 @@ void kernel_main(void) {
     PRINTF("PMM free frames:", pmm.free_frames); PRINTLN;
     PRINTF("PMM used frames:", pmm.total_frames - pmm.free_frames); PRINTLN;
 
-    pmm_free(pmm_alloc());
-
-    test_vmm_logic();
+    vmm_init();
+    PRINTS("VMM Initialized. Physical address: "); PRINTH(vmm.pml4_phys); PRINTLN;
 
     PRINTS(KERNEL_FINISH);
     hcf();

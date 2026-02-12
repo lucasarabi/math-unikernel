@@ -31,6 +31,7 @@ struct vmm_context {
 
 extern struct vmm_context vmm;
 
+void vmm_init();
 void vmm_map_virt_to_phys(uint64_t virt_addr, uint64_t phys_addr, uint64_t flags);
 void test_vmm_logic();
 
