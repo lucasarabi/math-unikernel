@@ -25,6 +25,7 @@ struct idt_context {
 };
 
 extern struct idt_context idt;
+extern void* isr_stub_table[];
 
 void idt_init();
 

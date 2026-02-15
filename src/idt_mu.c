@@ -3,6 +3,7 @@
 #include "headers/io_mu.h"
 
 #define GDT_KERNEL 0x08
+#define FULL_KERNEL_AUTHORITY 0x8e
 
 #define MASK_16 0xffff
 #define MASK_32 0xffffffff
@@ -23,6 +24,12 @@ void idt_set_descriptor(uint8_t vector, uint64_t virt_addr, uint8_t flags) {
 }
 
 void idt_init() {
+    for(uint8_t vector = 0; vector < 32; vector++) {
+        idt_set_descriptor(vector, (uint64_t)isr_stub_table[vector], FULL_KERNEL_AUTHORITY);
+    }
 
+    idt.pointer.limit = (uint16_t)(sizeof(idt.entries) - 1);
+    idt.pointer.base = (uint16_t)idt.entries;
 
+    load_idt(&idt.pointer);
 }
