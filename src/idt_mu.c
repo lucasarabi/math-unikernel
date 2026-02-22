@@ -2,6 +2,12 @@
 #include "headers/lib_mu.h"
 #include "headers/io_mu.h"
 
+#define PRINTS write_serial_str
+#define PRINTH write_serial_hex
+#define PRINTD write_serial_dec
+#define PRINTLN write_serial_str("\n");
+#define PRINTF(str, val) PRINTS(str); PRINTS("\t"); PRINTD(val); PRINTS("\t");
+
 #define GDT_KERNEL 0x08
 #define FULL_KERNEL_AUTHORITY 0x8e
 
@@ -29,7 +35,24 @@ void idt_init() {
     }
 
     idt.pointer.limit = (uint16_t)(sizeof(idt.entries) - 1);
-    idt.pointer.base = (uint16_t)idt.entries;
+    idt.pointer.base = (uint64_t)idt.entries;
 
     load_idt(&idt.pointer);
+}
+
+void exception_handler(struct interrupt_frame* frame) {
+    idt.total_interrupts++;
+
+    PRINTS("\n--- !!! MATH UNIKERNEL PANIC !!! ---\n");
+    PRINTS("Exception Vector: "); PRINTD(frame->interrupt_number); PRINTLN;
+    PRINTS("Error Code:       "); PRINTH(frame->error_code); PRINTLN;
+    PRINTS("RIP (Address):    "); PRINTH(frame->rip); PRINTLN;
+    
+    PRINTS("\n--- REGISTER SNAPSHOT ---\n");
+    PRINTF("RAX:", frame->rax); PRINTF("RBX:", frame->rbx); PRINTLN;
+    PRINTF("RCX:", frame->rcx); PRINTF("RDX:", frame->rdx); PRINTLN;
+    PRINTF("RDI:", frame->rdi); PRINTF("RSI:", frame->rsi); PRINTLN;
+    
+    PRINTS("\nHalting system to prevent data corruption...");
+    hcf();
 }

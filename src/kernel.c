@@ -7,6 +7,7 @@
 #include "headers/io_mu.h"
 #include "headers/pmm_mu.h"
 #include "headers/vmm_mu.h"
+#include "headers/idt_mu.h"
 
 #define PRINTS write_serial_str
 #define PRINTH write_serial_hex
@@ -87,6 +88,14 @@ void kernel_main(void) {
     PRINTS("VMM Initialized. Physical address: "); PRINTH(vmm.pml4_phys); PRINTLN;
 
     vmm_activate();
+
+    idt_init(); 
+    PRINTS("IDT loaded"); PRINTLN;
+
+    // TODO -- Code stalls here. Find out why idt is failing
+    volatile int a = 10;
+    volatile int b = 0;
+    volatile int c = a/b;
 
     PRINTS(KERNEL_FINISH);
     hcf();

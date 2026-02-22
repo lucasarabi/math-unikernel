@@ -24,9 +24,23 @@ struct idt_context {
     uint64_t total_interrupts;
 };
 
+struct interrupt_frame {
+    uint64_t r15, r14, r13, r12, r11, r10, r9, r8; // Registers pushed by isr_common (reverse order of pushq)
+    uint64_t rbp, rdi, rsi, rdx, rcx, rbx, rax;
+
+    // Pushed by the isr_stub macro
+    uint64_t interrupt_number;
+    uint64_t error_code;
+
+    // Pushed automatically by the CPU hardware
+    uint64_t rip, cs, rflags, rsp, ss;
+} __attribute__((packed));
+
 extern struct idt_context idt;
 extern void* isr_stub_table[];
 
+void load_idt(struct idt_ptr* ptr);
 void idt_init();
+void exception_handler(struct interrupt_frame* frame);
 
 #endif
