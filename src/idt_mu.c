@@ -8,7 +8,7 @@
 #define PRINTLN write_serial_str("\n");
 #define PRINTF(str, val) PRINTS(str); PRINTS("\t"); PRINTD(val); PRINTS("\t");
 
-#define GDT_KERNEL 0x28 // 16-bit code segment
+#define GDT_KERNEL 0x28 // 64-bit code segment
 #define FULL_KERNEL_AUTHORITY 0x8e
 
 #define MASK_16 0xffff
@@ -30,6 +30,8 @@ void idt_set_descriptor(uint8_t vector, uint64_t virt_addr, uint8_t flags) {
 }
 
 void idt_init() {
+    memset(&idt.entries, 0, sizeof(idt.entries));
+
     for(uint8_t vector = 0; vector < 32; vector++) {
         idt_set_descriptor(vector, (uint64_t)isr_stub_table[vector], FULL_KERNEL_AUTHORITY);
     }
