@@ -92,11 +92,6 @@ void kernel_main(void) {
     idt_init(); 
     PRINTS("IDT loaded"); PRINTLN;
 
-    // TODO -- Code stalls here. Find out why idt is failing
-    volatile int a = 10;
-    volatile int b = 0;
-    volatile int c = a/b;
-
     PRINTS(KERNEL_FINISH);
     hcf();
 }
