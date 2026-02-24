@@ -71,9 +71,7 @@ isr_common:
 
 
 # ISR Stubs
-
 .section .text
-
 .macro isr_no_err vector
 .global isr_stub_\vector
 isr_stub_\vector:
