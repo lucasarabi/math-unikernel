@@ -85,12 +85,13 @@ void kernel_main(void) {
     PRINTF("PMM used frames:", pmm.total_frames - pmm.free_frames); PRINTLN;
 
     vmm_init(kernel_addr_request.response, memmap_request.response);
-    PRINTS("VMM Initialized. Physical address: "); PRINTH(vmm.pml4_phys); PRINTLN;
+    PRINTS("VMM initialized. Physical address: "); PRINTH(vmm.pml4_phys); PRINTLN;
 
     vmm_activate();
+    PRINTS("VMM activated."); PRINTLN;
 
     idt_init(); 
-    PRINTS("IDT loaded"); PRINTLN;
+    PRINTS("IDT loaded."); PRINTLN;
 
     PRINTS(KERNEL_FINISH);
     hcf();

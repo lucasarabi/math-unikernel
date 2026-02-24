@@ -69,16 +69,12 @@ void vmm_init(struct limine_kernel_address_response* kernel_addr_response, struc
 
     vmm_map_range(kernel_addr_response->virtual_base, kernel_addr_response->physical_base, kernel_size, VMM_PRESENT | VMM_WRITEABLE);
 
-    uint64_t usable_ram_bytes = 0;
     for(uint64_t i = 0; i < memmap_response->entry_count; i++) {
         struct limine_memmap_entry* entry = memmap_response->entries[i];
         if(entry->type == LIMINE_MEMMAP_USABLE) {
             vmm_map_range(entry->base + hhdm_offset, entry->base, entry->length, VMM_PRESENT | VMM_WRITEABLE);
-            usable_ram_bytes += entry->length;
         }
     }
-
-    PRINTF("Usable ram size (MB): ", usable_ram_bytes/(1024*1024)); PRINTLN;
 }
 
 void vmm_activate() {
