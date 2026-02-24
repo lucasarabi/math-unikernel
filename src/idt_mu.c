@@ -8,7 +8,7 @@
 #define PRINTLN write_serial_str("\n");
 #define PRINTF(str, val) PRINTS(str); PRINTS("\t"); PRINTD(val); PRINTS("\t");
 
-#define GDT_KERNEL 0x08
+#define GDT_KERNEL 0x28 // 16-bit code segment
 #define FULL_KERNEL_AUTHORITY 0x8e
 
 #define MASK_16 0xffff
@@ -34,6 +34,7 @@ void idt_init() {
         idt_set_descriptor(vector, (uint64_t)isr_stub_table[vector], FULL_KERNEL_AUTHORITY);
     }
 
+    idt.total_interrupts = 0;
     idt.pointer.limit = (uint16_t)(sizeof(idt.entries) - 1);
     idt.pointer.base = (uint64_t)idt.entries;
 
@@ -53,6 +54,6 @@ void exception_handler(struct interrupt_frame* frame) {
     PRINTF("RCX:", frame->rcx); PRINTF("RDX:", frame->rdx); PRINTLN;
     PRINTF("RDI:", frame->rdi); PRINTF("RSI:", frame->rsi); PRINTLN;
     
-    PRINTS("\nHalting system to prevent data corruption...");
+    PRINTS("\nHalting system to prevent data corruption...\n");
     hcf();
 }
