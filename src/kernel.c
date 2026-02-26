@@ -3,12 +3,12 @@
 #include <stdbool.h>
 #include "headers/limine.h"
 #include "headers/hhdm_offset.h"
-#include "headers/lib_mu.h"
-#include "headers/io_mu.h"
-#include "headers/pmm_mu.h"
-#include "headers/vmm_mu.h"
-#include "headers/idt_mu.h"
-#include "headers/gdt_mu.h"
+#include "headers/lib.h"
+#include "headers/io.h"
+#include "headers/pmm.h"
+#include "headers/vmm.h"
+#include "headers/idt.h"
+#include "headers/gdt.h"
 
 #define PRINTS write_serial_str
 #define PRINTH write_serial_hex

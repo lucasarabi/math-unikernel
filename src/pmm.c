@@ -1,7 +1,7 @@
-#include "headers/pmm_mu.h"
+#include "headers/pmm.h"
 #include "headers/limine.h"
-#include "headers/lib_mu.h"
-#include "headers/io_mu.h"
+#include "headers/lib.h"
+#include "headers/io.h"
 #include "headers/hhdm_offset.h"
 
 

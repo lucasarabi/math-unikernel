@@ -1,6 +1,6 @@
-#include "headers/idt_mu.h"
-#include "headers/lib_mu.h"
-#include "headers/io_mu.h"
+#include "headers/idt.h"
+#include "headers/lib.h"
+#include "headers/io.h"
 
 #define PRINTS write_serial_str
 #define PRINTH write_serial_hex

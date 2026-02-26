@@ -1,9 +1,9 @@
 #include "headers/limine.h"
-#include "headers/vmm_mu.h"
-#include "headers/pmm_mu.h"
-#include "headers/lib_mu.h"
+#include "headers/vmm.h"
+#include "headers/pmm.h"
+#include "headers/lib.h"
 #include "headers/hhdm_offset.h"
-#include "headers/io_mu.h"
+#include "headers/io.h"
 
 #define PRINTS write_serial_str
 #define PRINTD write_serial_dec

@@ -1,4 +1,4 @@
-#include "headers/io_mu.h"
+#include "headers/io.h"
 
 #define COM1 0x3f8
 #define LINE_STATUS_REG (COM1 + 5)

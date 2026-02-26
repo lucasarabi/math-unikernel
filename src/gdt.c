@@ -1,4 +1,4 @@
-#include "headers/gdt_mu.h"
+#include "headers/gdt.h"
 
 #define NULL_ACCESS_BYTE    0x00
 #define NULL_FLAGS          0x0
