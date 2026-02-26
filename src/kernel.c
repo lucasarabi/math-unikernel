@@ -17,16 +17,19 @@
 #define PRINTLN write_serial_str("\n");
 #define PRINTF(str, val) PRINTS(str); PRINTS("\t"); PRINTD(val); PRINTS("\t");
 
-#define MEMMAP_REQUEST_FAILURE      "ERROR: memmap request failed.\n"
-#define HHDM_REQUEST_FAILURE        "ERROR: hhdm request failed.\n"
-#define KERNEL_ADDR_REQUEST_FAILURE "ERROR: kernel address request failed.\n"
-#define PMM_INITIALIZED             "PMM has been initialized.\n"
-#define VMM_INITIALIZED             "VMM has been initialized and loaded.\n"
-#define IDT_INITIALIZED             "IDT has been initialized and loaded.\n"
-#define GDT_INITIALIZED             "GDT has been initialized and loaded.\n"
+#define MEMMAP_REQUEST_FAILURE          "ERROR: memmap request failed.\n"
+#define HHDM_REQUEST_FAILURE            "ERROR: hhdm request failed.\n"
+#define KERNEL_ADDR_REQUEST_FAILURE     "ERROR: kernel address request failed.\n"
+#define UNSUPPORTED_REVISION_FAILURE    "ERROR: kernel address request failed.\n"
 
-#define LIMINE_HANDSHAKE_SUCCESS    "Limine handshake successful.\n"
-#define KERNEL_FINISH   "Finished kernel execution. Exiting.\n"
+#define PMM_INITIALIZED                 "READY: PMM has been initialized.\n"
+#define VMM_INITIALIZED                 "READY: VMM has been initialized and loaded.\n"
+#define IDT_INITIALIZED                 "READY: IDT has been initialized and loaded.\n"
+#define GDT_INITIALIZED                 "READY: GDT has been initialized and loaded.\n"
+#define SIMD_ENABLED                    "READY: AVX/SSE enabled.\n"
+
+#define LIMINE_HANDSHAKE_SUCCESS        "Limine handshake successful.\n"
+#define KERNEL_FINISH                   "Finished kernel execution. Exiting.\n"
 
 __attribute__((used, section(".limine_requests")))
 static volatile LIMINE_BASE_REVISION(0);
@@ -65,6 +68,7 @@ void kernel_main(void) {
     serial_init(); 
 
     if(!LIMINE_BASE_REVISION_SUPPORTED) {
+        PRINTS(UNSUPPORTED_REVISION_FAILURE);
         hcf();
     }
     if(memmap_request.response == NULL) {
@@ -83,6 +87,12 @@ void kernel_main(void) {
     PRINTS(LIMINE_HANDSHAKE_SUCCESS); 
 
     hhdm_offset = hhdm_request.response->offset;
+    
+    gdt_init();
+    PRINTS(GDT_INITIALIZED); 
+
+    idt_init(); 
+    PRINTS(IDT_INITIALIZED); 
 
     pmm_init(memmap_request.response); 
     PRINTS(PMM_INITIALIZED);
@@ -90,12 +100,9 @@ void kernel_main(void) {
     vmm_init(kernel_addr_request.response, memmap_request.response);
     PRINTS(VMM_INITIALIZED); 
 
-    idt_init(); 
-    PRINTS(IDT_INITIALIZED); 
-
-    gdt_init();
-    PRINTS(GDT_INITIALIZED); 
-
+    enable_simd();
+    PRINTS(SIMD_ENABLED);
+    
     PRINTS(KERNEL_FINISH);
     hcf();
 }
