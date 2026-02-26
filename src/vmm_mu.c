@@ -70,9 +70,9 @@ void vmm_init(struct limine_kernel_address_response* kernel_addr_response, struc
     vmm_map_range(kernel_addr_response->virtual_base, kernel_addr_response->physical_base, kernel_size, VMM_PRESENT | VMM_WRITEABLE);
 
     for(uint64_t i = 0; i < memmap_response->entry_count; i++) {
-        struct limine_memmap_entry* entry = memmap_response->entries[i];
-        if(entry->type == LIMINE_MEMMAP_USABLE) {
-            vmm_map_range(entry->base + hhdm_offset, entry->base, entry->length, VMM_PRESENT | VMM_WRITEABLE);
+        struct limine_memmap_entry* current = memmap_response->entries[i];
+        if(current->type == LIMINE_MEMMAP_USABLE || current->type == LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE) {
+            vmm_map_range(current->base + hhdm_offset, current->base, current->length, VMM_PRESENT | VMM_WRITEABLE);
         }
     }
 }

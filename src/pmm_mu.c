@@ -61,7 +61,7 @@ static uint64_t get_highest_usable_addr(struct limine_memmap_response* response)
 
         uint64_t ceiling = current->base + current->length;
 
-        if(current->type == LIMINE_MEMMAP_USABLE && ceiling > largest_addr) 
+        if((current->type == LIMINE_MEMMAP_USABLE || current->type == LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE) && ceiling > largest_addr) 
             largest_addr = ceiling;
     }
 
@@ -101,7 +101,7 @@ void pmm_init(struct limine_memmap_response* response) {
 
     for(uint64_t i = 0; i < num_entries; i++) {
         struct limine_memmap_entry* current = entries[i];
-        if(current->type == LIMINE_MEMMAP_USABLE) {
+        if(current->type == LIMINE_MEMMAP_USABLE || current->type == LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE) {
             for(uint64_t addr = current->base; addr < (current->base + current->length); addr += 4096) {
                 uint64_t frame_index = phys_addr_to_index(addr);
                 free_frame(bitmap, frame_index); 
