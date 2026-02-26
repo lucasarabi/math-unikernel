@@ -8,6 +8,7 @@
 #include "headers/pmm_mu.h"
 #include "headers/vmm_mu.h"
 #include "headers/idt_mu.h"
+#include "headers/gdt_mu.h"
 
 #define PRINTS write_serial_str
 #define PRINTH write_serial_hex
@@ -92,6 +93,9 @@ void kernel_main(void) {
 
     idt_init(); 
     PRINTS("IDT loaded."); PRINTLN;
+
+    gdt_init();
+    PRINTS("GDT loaded."); PRINTLN;
 
     PRINTS(KERNEL_FINISH);
     hcf();

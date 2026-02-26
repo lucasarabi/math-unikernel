@@ -140,3 +140,27 @@ isr_no_err 31
 
 isr_stub_table:
     gen_isr_table 32
+
+
+/* GDT logic */
+
+# utility for idt_init() in idt_mu.c
+.section .text
+.global load_gdt
+load_gdt:
+    lgdt (%rdi)
+
+    movw $0x10, %ax
+    movw %ax, %ds
+    movw %ax, %es
+    movw %ax, %fs
+    movw %ax, %gs
+    movw %ax, %ss
+
+    pushq $0x08
+    lea .reload_CS(%rip), %rax
+    pushq %rax
+    lretq
+
+.reload_CS:
+    ret
