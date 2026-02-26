@@ -20,7 +20,10 @@
 #define MEMMAP_REQUEST_FAILURE      "ERROR: memmap request failed.\n"
 #define HHDM_REQUEST_FAILURE        "ERROR: hhdm request failed.\n"
 #define KERNEL_ADDR_REQUEST_FAILURE "ERROR: kernel address request failed.\n"
-#define CR3_LOADED "VMM PML4 has been loaded to CR3 register.\n"
+#define PMM_INITIALIZED             "PMM has been initialized.\n"
+#define VMM_INITIALIZED             "VMM has been initialized and loaded.\n"
+#define IDT_INITIALIZED             "IDT has been initialized and loaded.\n"
+#define GDT_INITIALIZED             "GDT has been initialized and loaded.\n"
 
 #define LIMINE_HANDSHAKE_SUCCESS    "Limine handshake successful.\n"
 #define KERNEL_FINISH   "Finished kernel execution. Exiting.\n"
@@ -82,21 +85,16 @@ void kernel_main(void) {
     hhdm_offset = hhdm_request.response->offset;
 
     pmm_init(memmap_request.response); 
-    PRINTF("PMM total frames:", pmm.total_frames); PRINTLN;
-    PRINTF("PMM free frames:", pmm.free_frames); PRINTLN;
-    PRINTF("PMM used frames:", pmm.total_frames - pmm.free_frames); PRINTLN;
+    PRINTS(PMM_INITIALIZED);
 
     vmm_init(kernel_addr_request.response, memmap_request.response);
-    PRINTS("VMM initialized. Physical address: "); PRINTH(vmm.pml4_phys); PRINTLN;
-
-    vmm_activate();
-    PRINTS("VMM activated. CR3 loaded."); PRINTLN;
+    PRINTS(VMM_INITIALIZED); 
 
     idt_init(); 
-    PRINTS("IDT loaded."); PRINTLN;
+    PRINTS(IDT_INITIALIZED); 
 
     gdt_init();
-    PRINTS("GDT loaded."); PRINTLN;
+    PRINTS(GDT_INITIALIZED); 
 
     PRINTS(KERNEL_FINISH);
     hcf();

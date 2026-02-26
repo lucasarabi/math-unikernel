@@ -73,9 +73,8 @@ void vmm_init(struct limine_kernel_address_response* kernel_addr_response, struc
             vmm_map_range(current->base + hhdm_offset, current->base, current->length, VMM_PRESENT | VMM_WRITEABLE);
         }
     }
-}
-
-void vmm_activate() {
+    
+    // Load CR3 register with PML4 physical address
     __asm__ volatile ("mov %0, %%cr3" :: "r"(vmm.pml4_phys) : "memory");
 }
 
