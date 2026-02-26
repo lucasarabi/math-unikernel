@@ -16,8 +16,6 @@
 #define PD_SHIFT   21
 #define PT_SHIFT   12
 
-#define CR3_LOADED "VMM PML4 has been loaded to CR3 register.\n"
-
 struct vmm_context vmm; 
 
 static void vmm_prep_pml4() {
@@ -79,7 +77,6 @@ void vmm_init(struct limine_kernel_address_response* kernel_addr_response, struc
 
 void vmm_activate() {
     __asm__ volatile ("mov %0, %%cr3" :: "r"(vmm.pml4_phys) : "memory");
-    PRINTS(CR3_LOADED);
 }
 
 uint64_t next_virt_addr = 0xffff900000000000;
