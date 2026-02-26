@@ -20,6 +20,7 @@
 #define MEMMAP_REQUEST_FAILURE      "ERROR: memmap request failed.\n"
 #define HHDM_REQUEST_FAILURE        "ERROR: hhdm request failed.\n"
 #define KERNEL_ADDR_REQUEST_FAILURE "ERROR: kernel address request failed.\n"
+#define CR3_LOADED "VMM PML4 has been loaded to CR3 register.\n"
 
 #define LIMINE_HANDSHAKE_SUCCESS    "Limine handshake successful.\n"
 #define KERNEL_FINISH   "Finished kernel execution. Exiting.\n"
@@ -89,7 +90,7 @@ void kernel_main(void) {
     PRINTS("VMM initialized. Physical address: "); PRINTH(vmm.pml4_phys); PRINTLN;
 
     vmm_activate();
-    PRINTS("VMM activated."); PRINTLN;
+    PRINTS("VMM activated. CR3 loaded."); PRINTLN;
 
     idt_init(); 
     PRINTS("IDT loaded."); PRINTLN;
