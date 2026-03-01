@@ -9,13 +9,7 @@
 #include "headers/vmm.h"
 #include "headers/idt.h"
 #include "headers/gdt.h"
-
-#define PRINTS write_serial_str
-#define PRINTH write_serial_hex
-#define PRINTD write_serial_dec
-#define PRINTB(val) write_serial_bin(val, 8)
-#define PRINTLN write_serial_str("\n");
-#define PRINTF(str, val) PRINTS(str); PRINTS("\t"); PRINTD(val); PRINTS("\t");
+#include "headers/workload.h"
 
 #define MEMMAP_REQUEST_FAILURE          "ERROR: memmap request failed.\n"
 #define HHDM_REQUEST_FAILURE            "ERROR: hhdm request failed.\n"
@@ -102,7 +96,10 @@ void kernel_main(void) {
 
     enable_simd();
     PRINTS(SIMD_ENABLED);
-    
+
+    run_workload();
+    PRINTS("Math workload executed!\n");
+   
     PRINTS(KERNEL_FINISH);
     hcf();
 }

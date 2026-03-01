@@ -5,12 +5,6 @@
 #include "headers/hhdm_offset.h"
 #include "headers/io.h"
 
-#define PRINTS write_serial_str
-#define PRINTD write_serial_dec
-#define PRINTH write_serial_hex
-#define PRINTLN write_serial_str("\n");
-#define PRINTF(str, val) PRINTS(str); PRINTS(" "); PRINTD(val);
-
 #define PML4_SHIFT 39
 #define PDPT_SHIFT 30
 #define PD_SHIFT   21

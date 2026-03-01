@@ -17,3 +17,4 @@ qemu-system-x86_64 \
     -m 512M \
     -no-reboot \
     -no-shutdown \
+    -cpu max

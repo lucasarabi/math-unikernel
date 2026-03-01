@@ -4,16 +4,8 @@
 #include "headers/io.h"
 #include "headers/hhdm_offset.h"
 
-
-#define PRINTS write_serial_str
-#define PRINTD write_serial_dec
-#define PRINTH write_serial_hex
-#define PRINTLN write_serial_str("\n");
-#define PRINTF(str, val) PRINTS(str); PRINTS(" "); PRINTD(val); PRINTLN;
-
 #define PMM_UNINITIALIZED   "ERROR: Physical memory manager has not been initialized"
 #define PMM_MISALIGNMENT    "ERROR: Attempted to free unaligned address. Pages but be aligned to 1kb (4096 bits)"
-
 
 struct pmm_context pmm;
 

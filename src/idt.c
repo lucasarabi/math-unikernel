@@ -2,12 +2,6 @@
 #include "headers/lib.h"
 #include "headers/io.h"
 
-#define PRINTS write_serial_str
-#define PRINTH write_serial_hex
-#define PRINTD write_serial_dec
-#define PRINTLN write_serial_str("\n");
-#define PRINTF(str, val) PRINTS(str); PRINTS("\t"); PRINTD(val); PRINTS("\t");
-
 #define GDT_KERNEL 0x08 
 #define FULL_KERNEL_AUTHORITY 0x8e
 
