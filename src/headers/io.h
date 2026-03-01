@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+// I/O Serial Driver API
 void serial_init();
 void write_serial_str(const char* s);
 void write_serial_hex(uint64_t val);
