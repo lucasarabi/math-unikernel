@@ -5,7 +5,8 @@
 #include "headers/hhdm_offset.h"
 
 #define PMM_UNINITIALIZED   "ERROR: Physical memory manager has not been initialized"
-#define PMM_MISALIGNMENT    "ERROR: Attempted to free unaligned address. Pages but be aligned to 1kb (4096 bits)"
+#define PMM_MISALIGNMENT    "ERROR: Attempted to free unaligned address. Pages must be aligned to 1kb (4096 bits)"
+#define PMM_2MB_MISALIGNMENT    "ERROR: Attempted to free unaligned address. Pages must be aligned to 2mb"
 
 struct pmm_context pmm;
 
@@ -114,7 +115,7 @@ uint64_t pmm_alloc() {
 
     uint64_t byte_index = 0;
 
-    // Next fit
+    // first fit
     while(byte_index < bitmap_size && bitmap[byte_index] == 0xff) {
         byte_index++;
     }
@@ -145,7 +146,49 @@ void pmm_free(uint64_t phys_addr) {
 
     uint64_t frame_index = phys_addr_to_index(phys_addr); 
     free_frame(bitmap, frame_index);
+}
 
-    PRINTS("(PMM) ");
-    PRINTF("Freeing frame index: ", frame_index);
+uint64_t pmm_alloc_2mb() {
+    uint8_t* bitmap = pmm.bitmap;
+    uint64_t bitmap_size = pmm.bitmap_size;
+
+    uint64_t byte_index = 0;
+
+    for(byte_index = 0; byte_index + 64 <= bitmap_size; byte_index += 64) {
+        bool is_valid = true;
+        for(uint8_t entry = 0; entry < 64; entry++ ) {
+            if(bitmap[byte_index + entry] != 0) {
+                is_valid = false;
+                break;
+            }
+        }
+        if(is_valid) break;
+    }
+
+    if(byte_index + 64 > bitmap_size) return 0;
+
+    for(int i = byte_index; i < byte_index + 64; i++) {
+        bitmap[i] = 0xff;
+    }
+
+    uint64_t frame_index = byte_index * 8;
+
+    return index_to_phys_addr(frame_index);
+}
+
+void pmm_free_2mb(uint64_t phys_addr) {
+    if (phys_addr % 0x200000 != 0) {
+        PRINTS(PMM_2MB_MISALIGNMENT); PRINTLN;
+        return; 
+    }
+
+    uint8_t* bitmap = pmm.bitmap;
+    uint64_t bitmap_size = pmm.bitmap_size;
+    uint64_t byte_index = phys_addr_to_index(phys_addr) / 8;
+
+    if(byte_index + 64 > bitmap_size) return;
+
+    for(uint64_t i = byte_index; i < byte_index + 64; i++) {
+        bitmap[i] = 0x00;
+    }
 }
