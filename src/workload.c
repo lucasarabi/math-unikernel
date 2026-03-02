@@ -1,4 +1,6 @@
-#pragma GCC target("avx")
+// Crucial compiler directive -- utilize AVX features in this file that are otherwise disabled in the rest of the project
+#pragma GCC target("avx")  
+
 #include "headers/workload.h"
 #include "headers/io.h"
 #include <immintrin.h>
@@ -6,6 +8,8 @@
 float matrix_a[8] __attribute__((aligned(32))) = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
 float matrix_b[8] __attribute__((aligned(32))) = {1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8};
 float result[8]   __attribute__((aligned(32)));
+
+/* TEST WORKLOAD */
 
 void run_workload() {
     // 1. Load: Pull 8 floats from RAM into YMM registers
