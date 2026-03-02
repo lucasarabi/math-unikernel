@@ -97,9 +97,9 @@ void kernel_main(void) {
     enable_simd();
     PRINTS(SIMD_ENABLED);
 
-    PRINTS("Testing huge page allocation\n");
-    vmm_alloc_huge_page(1, VMM_WRITEABLE);
-    PRINTS("Allocated pages!\n");
+    // RUN WORKLOAD
+    /* Currently computing a dot product. Due to lack of float printer, result is casted to int. Result is truncated. */
+    run(); 
 
     PRINTS(KERNEL_FINISH);
     hcf();

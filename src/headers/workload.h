@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
-void run_workload();
+float run_heavy_workload(float* vec_a, float* vec_b);
+void run();
 
 #endif

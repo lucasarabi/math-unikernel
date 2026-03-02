@@ -19,6 +19,7 @@
 #define VMM_GET_ADDR(entry) ((entry) & VMM_ADDR_MASK)
 
 struct limine_kernel_address_response;
+struct limine_memmap_response;
 
 typedef uint64_t pt_entry_t; // Stores phys addr of next table
 
