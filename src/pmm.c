@@ -148,6 +148,8 @@ void pmm_free(uint64_t phys_addr) {
     free_frame(bitmap, frame_index);
 }
 
+/* 2mb page logic */
+
 uint64_t pmm_alloc_2mb() {
     uint8_t* bitmap = pmm.bitmap;
     uint64_t bitmap_size = pmm.bitmap_size;

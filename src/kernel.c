@@ -97,9 +97,10 @@ void kernel_main(void) {
     enable_simd();
     PRINTS(SIMD_ENABLED);
 
-    run_workload();
-    PRINTS("Math workload executed!\n");
-   
+    PRINTS("Testing huge page allocation\n");
+    vmm_alloc_huge_page(1, VMM_WRITEABLE);
+    PRINTS("Allocated pages!\n");
+
     PRINTS(KERNEL_FINISH);
     hcf();
 }

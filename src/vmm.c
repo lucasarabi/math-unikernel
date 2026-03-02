@@ -73,6 +73,7 @@ void vmm_init(struct limine_kernel_address_response* kernel_addr_response, struc
 }
 
 uint64_t next_virt_addr = 0xffff900000000000;
+
 void* vmm_alloc(uint64_t num_pages, uint64_t flags) {
     void* start_addr = (void*)next_virt_addr;
 
@@ -81,8 +82,50 @@ void* vmm_alloc(uint64_t num_pages, uint64_t flags) {
         vmm_map_virt_to_phys(next_virt_addr, phys_addr, flags);
         memset((void*)next_virt_addr, 0, 4096);
 
-        next_virt_addr += 4096;
+        next_virt_addr += 4096; // Increment by 4kb
     }
     
+    return start_addr;
+}
+
+ 
+/* 2mb page logic */
+
+void vmm_map_virt_to_phys_huge_page(uint64_t virt_addr, uint64_t phys_addr, uint64_t flags) {
+    page_table_t* current_table = vmm.pml4_virt;
+
+    for(int level = 3; level > 1; level--) {
+        uint64_t index = (virt_addr >> (12 + (level*9))) & VMM_INDEX_MASK; 
+
+        if(!(current_table->entries[index] & VMM_PRESENT)) {
+            uint64_t new_table_phys = pmm_alloc();
+            page_table_t* new_table_virt = (page_table_t*)(new_table_phys + hhdm_offset);
+            memset(new_table_virt, 0, 4096);
+
+            current_table->entries[index] = new_table_phys | VMM_PRESENT | VMM_WRITEABLE;
+        }
+    
+        current_table = (page_table_t*)(VMM_GET_ADDR(current_table->entries[index]) + hhdm_offset);
+    }
+
+    uint64_t pd_index = (virt_addr >> 21) & VMM_INDEX_MASK;
+    current_table->entries[pd_index] = (phys_addr & VMM_ADDR_MASK) | flags | VMM_PRESENT | VMM_HUGE;
+
+    __asm__ volatile("invlpg (%0)" :: "r"(virt_addr) : "memory");
+}
+
+void* vmm_alloc_huge_page(uint64_t num_pages, uint64_t flags) {
+    next_virt_addr = (next_virt_addr + 0x1fffff) & ~0x1fffff;
+
+    void* start_addr = (void*)next_virt_addr;
+
+    for(uint64_t i = 0; i < num_pages; i++) {
+        uint64_t phys_addr = pmm_alloc_2mb();
+        vmm_map_virt_to_phys_huge_page(next_virt_addr, phys_addr, flags);
+        memset((void*)next_virt_addr, 0, 0x200000);
+
+        next_virt_addr += 0x200000; // Increment by 2mb
+    }
+
     return start_addr;
 }

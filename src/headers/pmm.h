@@ -19,6 +19,8 @@ extern struct pmm_context pmm;
 void pmm_init(struct limine_memmap_response* response);
 uint64_t pmm_alloc();
 void pmm_free(uint64_t phys_addr);
+
+// 2mb page API
 uint64_t pmm_alloc_2mb();
 void pmm_free_2mb(uint64_t phys_addr);
 

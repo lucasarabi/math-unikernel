@@ -40,4 +40,8 @@ void vmm_init(struct limine_kernel_address_response* kernel_addr_response, struc
 void vmm_activate();
 void* vmm_alloc(uint64_t num_pages, uint64_t flags);
 
+// 2mb page API
+void vmm_map_virt_to_phys_huge_page(uint64_t virt_addr, uint64_t phys_addr, uint64_t flags);
+void* vmm_alloc_huge_page(uint64_t num_pages, uint64_t flags);
+
 #endif
