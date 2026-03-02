@@ -38,15 +38,20 @@ float run_heavy_workload(float* vec_a, float* vec_b) {
     return total_sum;
 }
 
-void run() {
-     PRINTS("Testing Heavy Workload...\n");
+void run()
+{
+    PRINTS("Testing Heavy Workload...\n");
 
     // 1. Allocate 2 Huge Pages (4MB total)
-    float* v_a = (float*)vmm_alloc_huge_page(1, VMM_WRITEABLE);
-    float* v_b = (float*)vmm_alloc_huge_page(1, VMM_WRITEABLE);
+    float *v_a = (float *)vmm_alloc_huge_page(1, VMM_WRITEABLE);
+    float *v_b = (float *)vmm_alloc_huge_page(1, VMM_WRITEABLE);
 
     // 2. Mock some data (until your Streamer is done)
-    for(int i = 0; i < 10; i++) { v_a[i] = 1.0f; v_b[i] = 2.0f; }
+    for (uint32_t i = 0; i < 524288; i++)
+    {
+        v_a[i] = 1.0f;
+        v_b[i] = 1.0f;
+    }
 
     // 3. Run the Science
     float result = run_heavy_workload(v_a, v_b);
