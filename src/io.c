@@ -22,7 +22,7 @@ void serial_init() {
     outb(COM1+2, 0xc7);
 
     // Necessary for bare metal
-    outb(COM1+4, 0x0B);
+    outb(COM1+4, 0x0b);
 }
 
 static inline int is_transit_empty() {
@@ -54,7 +54,7 @@ void write_serial_hex(uint64_t val) {
 
     write_serial_str("0x");
     for(int i = 15; i >= 0; i--) {
-        uint8_t nibble = (val >> (i*4)) & 0xF;
+        uint8_t nibble = (val >> (i*4)) & 0xf;
         write_serial(hex_chars[nibble]);
     }
 }
