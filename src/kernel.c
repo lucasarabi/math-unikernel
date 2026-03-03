@@ -11,6 +11,7 @@
 #include "headers/gdt.h"
 #include "headers/workload.h"
 #include "headers/loader.h"
+#include "headers/states.h"
 
 #define MEMMAP_REQUEST_FAILURE          "ERROR: memmap request failed.\n"
 #define HHDM_REQUEST_FAILURE            "ERROR: hhdm request failed.\n"
@@ -22,6 +23,10 @@
 #define IDT_INITIALIZED                 "READY: IDT has been initialized and loaded.\n"
 #define GDT_INITIALIZED                 "READY: GDT has been initialized and loaded.\n"
 #define SIMD_ENABLED                    "READY: AVX/SSE enabled.\n"
+
+#define STATE_POLLING                   "STATE: Polling\n"
+#define STATE_EXECUTING                 "STATE: Executing\n"
+#define STATE_EXTRACTING                "STATE: Extracting\n"
 
 #define LIMINE_HANDSHAKE_SUCCESS        "Limine handshake successful.\n"
 #define KERNEL_FINISH                   "Finished kernel execution. Exiting.\n"
@@ -100,10 +105,29 @@ void kernel_main(void) {
 
     // RUN WORKLOAD
     /* Currently computing a dot product. Due to lack of float printer, result is casted to int. Result is truncated. */
-    run(); 
+    // run(); 
 
-    PRINTS("Waiting for magic number... Execution will continue when it is received...\n");
-    wait_for_magic_number();
+    enum states state = POLLING; 
+    bool running = true;
+
+    while(running) {
+        switch(state) {
+            case POLLING:
+                PRINTS(STATE_POLLING);
+                is_magic_number_received();
+                PRINTS("Magic number recived!\n");
+                state = EXECUTING;
+                break;
+            case EXECUTING:
+                PRINTS(STATE_EXECUTING);
+                state = EXTRACTING;
+                break;
+            case EXTRACTING:
+                PRINTS(STATE_EXTRACTING);
+                state = POLLING;
+                break;
+        }
+    }
 
     PRINTS(KERNEL_FINISH);
     hcf();

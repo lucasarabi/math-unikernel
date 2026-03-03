@@ -2,7 +2,8 @@
 #define LOADER_MU_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
-void wait_for_magic_number();
+bool is_magic_number_received();
 
 #endif
