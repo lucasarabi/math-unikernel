@@ -20,6 +20,9 @@ void serial_init() {
     outb(COM1+1, 0x00);
     outb(COM1+3, 0x03);
     outb(COM1+2, 0xc7);
+
+    // Necessary for bare metal
+    outb(COM1+4, 0x0B);
 }
 
 static inline int is_transit_empty() {
@@ -29,6 +32,15 @@ static inline int is_transit_empty() {
 static void write_serial(char a) {
     while(is_transit_empty() == 0);
     outb(COM1, a);
+}
+
+static inline int is_data_ready() {
+    return inb(LINE_STATUS_REG) & 0x01;
+}
+
+uint8_t read_serial() {
+    while(is_data_ready() == 0);
+    return inb(COM1);
 }
 
 void write_serial_str(const char* s) {

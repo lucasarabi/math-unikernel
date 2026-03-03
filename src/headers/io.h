@@ -9,6 +9,7 @@ void write_serial_str(const char* s);
 void write_serial_hex(uint64_t val);
 void write_serial_dec(uint64_t val);
 void write_serial_bin(uint32_t val, uint8_t bits);
+uint8_t read_serial();
 
 #define PRINTS write_serial_str
 #define PRINTD write_serial_dec
