@@ -10,7 +10,7 @@
  * Processes 2MB of floats (524,288 elements) using Fused Multiply-Add.
  * Requires: AVX and FMA hardware support.
  */
-float run_heavy_workload(float* vec_a, float* vec_b) {
+static float run_heavy_workload(float* vec_a, float* vec_b) {
     uint32_t count = 524288; // Total floats in one 2MB Huge Page
     
     // YMM register to hold 8 partial sums
