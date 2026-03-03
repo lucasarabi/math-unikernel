@@ -95,3 +95,4 @@ void write_serial_bin(uint32_t val, uint8_t bits) {
         }
     }
 }
+

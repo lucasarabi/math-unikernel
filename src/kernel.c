@@ -10,6 +10,7 @@
 #include "headers/idt.h"
 #include "headers/gdt.h"
 #include "headers/workload.h"
+#include "headers/loader.h"
 
 #define MEMMAP_REQUEST_FAILURE          "ERROR: memmap request failed.\n"
 #define HHDM_REQUEST_FAILURE            "ERROR: hhdm request failed.\n"
@@ -100,6 +101,9 @@ void kernel_main(void) {
     // RUN WORKLOAD
     /* Currently computing a dot product. Due to lack of float printer, result is casted to int. Result is truncated. */
     run(); 
+
+    PRINTS("Waiting for magic number... Execution will continue when it is received...\n");
+    wait_for_magic_number();
 
     PRINTS(KERNEL_FINISH);
     hcf();
