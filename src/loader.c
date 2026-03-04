@@ -22,3 +22,9 @@ uint64_t poll_payload_size() {
     }
     return number_of_bytes;
 }
+
+void poll_payload(uint8_t* payload_mem_addr, uint64_t payload_byte_size) {
+    for(uint64_t i = 0; i < payload_byte_size; i++) {
+        payload_mem_addr[i] = read_serial();
+    }
+}

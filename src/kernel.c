@@ -31,6 +31,8 @@
 #define LIMINE_HANDSHAKE_SUCCESS        "Limine handshake successful.\n"
 #define KERNEL_FINISH                   "Finished kernel execution. Exiting.\n"
 
+#define MB (1ULL << 20)
+
 __attribute__((used, section(".limine_requests")))
 static volatile LIMINE_BASE_REVISION(0);
 
@@ -116,8 +118,18 @@ void kernel_main(void) {
                 PRINTTAB; PRINTS("Unlocked."); PRINTLN;
 
                 PRINTTAB; PRINTS("Awaiting payload size."); PRINTLN;
-                uint64_t payload_byte_size = poll_payload_size();
-                PRINTTAB; PRINTF("Payload byte size:", payload_byte_size); PRINTLN;
+                uint64_t payload_byte_count = poll_payload_size();
+                PRINTTAB; PRINTF("Payload byte size:", payload_byte_count); PRINTLN;
+
+                uint64_t num_pages = payload_byte_count / (2*MB);
+                if(payload_byte_count % (2*MB) != 0)
+                    num_pages++;
+
+                uint8_t* payload_mem = vmm_alloc_huge_page(num_pages, VMM_WRITEABLE);
+
+                PRINTTAB; PRINTS("Downloading workload."); PRINTLN;
+                poll_payload(payload_mem, payload_byte_count);
+                PRINTTAB; PRINTS("Workload downloaded."); PRINTLN;
 
                 state = EXECUTING;
                 break;
