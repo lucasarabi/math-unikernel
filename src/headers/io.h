@@ -17,5 +17,6 @@ uint8_t read_serial();
 #define PRINTFLOAT(val) write_serial_float(val, 1)
 #define PRINTLN write_serial_str("\n");
 #define PRINTF(str, val) PRINTS(str); PRINTS(" "); PRINTD(val);
+#define PRINTTAB write_serial_str("\t");
 
 #endif

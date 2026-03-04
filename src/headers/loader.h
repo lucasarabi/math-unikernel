@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-bool is_magic_number_received();
+uint32_t unlock();
+uint64_t poll_payload_size();
 
 #endif

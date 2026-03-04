@@ -103,31 +103,41 @@ void kernel_main(void) {
     enable_simd();
     PRINTS(SIMD_ENABLED);
 
-    // RUN WORKLOAD
-    /* Currently computing a dot product. Due to lack of float printer, result is casted to int. Result is truncated. */
-    // run(); 
-
     enum states state = POLLING; 
     bool running = true;
 
-    while(running) {
+    do {
         switch(state) {
             case POLLING:
                 PRINTS(STATE_POLLING);
-                is_magic_number_received();
-                PRINTS("Magic number recived!\n");
+
+                PRINTTAB; PRINTS("Waiting for magic number."); PRINTLN;
+                unlock();
+                PRINTTAB; PRINTS("Unlocked."); PRINTLN;
+
+                PRINTTAB; PRINTS("Awaiting payload size."); PRINTLN;
+                uint64_t payload_byte_size = poll_payload_size();
+                PRINTTAB; PRINTF("Payload byte size:", payload_byte_size); PRINTLN;
+
                 state = EXECUTING;
                 break;
+
             case EXECUTING:
                 PRINTS(STATE_EXECUTING);
+
+                // run();
+
                 state = EXTRACTING;
                 break;
+
             case EXTRACTING:
                 PRINTS(STATE_EXTRACTING);
-                state = POLLING;
+
+                state = POLLING; // temp
+                // running = false;
                 break;
         }
-    }
+    } while(running);
 
     PRINTS(KERNEL_FINISH);
     hcf();
