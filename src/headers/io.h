@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 // I/O Serial Driver API
-void serial_init();
+void serial_init(uint32_t baud_rate);
 void write_serial_str(const char* s);
 void write_serial_hex(uint64_t val);
 void write_serial_dec(uint64_t val);

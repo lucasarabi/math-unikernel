@@ -13,16 +13,21 @@ static inline uint8_t inb(uint16_t port) {
     return ret;
 }
 
-void serial_init() {
-    outb(COM1+1, 0x00);
-    outb(COM1+3, 0x80);
-    outb(COM1+0, 0x01);
-    outb(COM1+1, 0x00);
-    outb(COM1+3, 0x03);
-    outb(COM1+2, 0xc7);
+void serial_init(uint32_t baud_rate) {
+    uint16_t divisor = 115200 / baud_rate;
+    uint8_t divisor_lo = divisor & 0xff;
+    uint8_t divisor_hi = (divisor >> 8) & 0xff;
 
-    // Necessary for bare metal
-    outb(COM1+4, 0x0b);
+    // Configure UART chip
+    outb(COM1+1, 0x00);     // disable interrupts
+    outb(COM1+3, 0x80);     // Enable Divisor Latch Access Bit
+    // Set baud rate
+    outb(COM1+0, divisor_lo);
+    outb(COM1+1, divisor_hi);
+    // Lock DLAB and set line mode
+    outb(COM1+3, 0x03);     // 8 bits, no parity, one stop bit (standard 8N1)
+    outb(COM1+2, 0xc7);     // enable FIFO, clear them, with 14-byte threshold
+    outb(COM1+4, 0x0b);     // IRQs enabled, RTS/DSR set
 }
 
 static inline int is_transit_empty() {

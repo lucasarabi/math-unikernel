@@ -67,7 +67,7 @@ uint64_t hhdm_offset;
 
 void kernel_main(void) {
     
-    serial_init(); 
+    serial_init(115200); 
 
     if(!LIMINE_BASE_REVISION_SUPPORTED) {
         PRINTS(UNSUPPORTED_REVISION_FAILURE);
