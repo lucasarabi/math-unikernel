@@ -18,3 +18,8 @@ Project Plan: https://docs.google.com/document/d/11_AAv_jsCrgcUY2xzpXuPdycS8Rdtf
 Build system by running in the following order:
 make -> ./build-iso.sh -> ./qemu.sh
 Reset with ./clean.sh
+
+### FONT CREDIT
+GitHub link: https://github.com/dhepper/font8x8/blob/master/README
+Author: Daniel Hepper <daniel@hepper.net>
+License: Public Domain 

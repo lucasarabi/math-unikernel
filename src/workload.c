@@ -3,7 +3,7 @@
 
 #include "headers/workload.h"
 #include "headers/vmm.h"
-#include "headers/io.h"
+#include "headers/display.h"
 #include <immintrin.h>
 
 /* * HEAVY WORKLOAD

@@ -1,6 +1,6 @@
 #include "headers/idt.h"
 #include "headers/lib.h"
-#include "headers/io.h"
+#include "headers/display.h"
 
 #define GDT_KERNEL 0x08 
 #define FULL_KERNEL_AUTHORITY 0x8e

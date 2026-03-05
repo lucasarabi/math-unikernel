@@ -48,6 +48,8 @@ uint8_t read_serial() {
     return inb(COM1);
 }
 
+// DEPRECATED
+/*
 void write_serial_str(const char* s) {
     for(int i = 0; s[i] != '\0'; i++) {
         write_serial(s[i]);
@@ -100,4 +102,4 @@ void write_serial_bin(uint32_t val, uint8_t bits) {
         }
     }
 }
-
+*/

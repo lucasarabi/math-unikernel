@@ -12,17 +12,20 @@
 #include "headers/workload.h"
 #include "headers/loader.h"
 #include "headers/states.h"
+#include "headers/display.h"
 
 #define MEMMAP_REQUEST_FAILURE          "ERROR: memmap request failed.\n"
 #define HHDM_REQUEST_FAILURE            "ERROR: hhdm request failed.\n"
 #define KERNEL_ADDR_REQUEST_FAILURE     "ERROR: kernel address request failed.\n"
 #define UNSUPPORTED_REVISION_FAILURE    "ERROR: kernel address request failed.\n"
+#define FRAMEBUFFER_REQUEST_FAILURE     "ERROR: framebuffer request failed.\n"
 
 #define PMM_INITIALIZED                 "READY: PMM has been initialized.\n"
 #define VMM_INITIALIZED                 "READY: VMM has been initialized and loaded.\n"
 #define IDT_INITIALIZED                 "READY: IDT has been initialized and loaded.\n"
 #define GDT_INITIALIZED                 "READY: GDT has been initialized and loaded.\n"
 #define SIMD_ENABLED                    "READY: AVX/SSE enabled.\n"
+#define DISPLAY_INITIALIZED             "READY: Display initialized.\n"
 
 #define STATE_POLLING                   "STATE: Polling\n"
 #define STATE_EXECUTING                 "STATE: Executing\n"
@@ -63,6 +66,12 @@ static volatile struct limine_kernel_address_request kernel_addr_request = {
     .response = NULL
 };
 
+__attribute__((used, section(".limine_requests")))
+static volatile struct limine_framebuffer_request framebuffer_request = {
+    .id = LIMINE_FRAMEBUFFER_REQUEST,
+    .revision = 0
+};
+
 uint64_t hhdm_offset;
 
 void kernel_main(void) {
@@ -86,24 +95,27 @@ void kernel_main(void) {
         hcf();
     }
 
+       if (framebuffer_request.response == NULL || framebuffer_request.response->framebuffer_count < 1) {
+        PRINTS(FRAMEBUFFER_REQUEST_FAILURE);
+        hcf();
+    } 
+
     PRINTS(LIMINE_HANDSHAKE_SUCCESS); 
 
     hhdm_offset = hhdm_request.response->offset;
     
     gdt_init();
-    PRINTS(GDT_INITIALIZED); 
 
     idt_init(); 
-    PRINTS(IDT_INITIALIZED); 
 
     pmm_init(memmap_request.response); 
-    PRINTS(PMM_INITIALIZED);
 
     vmm_init(kernel_addr_request.response, memmap_request.response);
-    PRINTS(VMM_INITIALIZED); 
 
     enable_simd();
-    PRINTS(SIMD_ENABLED);
+
+    struct limine_framebuffer* fb = framebuffer_request.response->framebuffers[0];
+    display_init((uint32_t *)fb->address, fb->pitch, fb->width, fb->height);
 
     enum states state = POLLING; 
     bool running = true;

@@ -1,8 +1,8 @@
 #include "headers/pmm.h"
 #include "headers/limine.h"
 #include "headers/lib.h"
-#include "headers/io.h"
 #include "headers/hhdm_offset.h"
+#include "headers/display.h"
 
 #define PMM_UNINITIALIZED   "ERROR: Physical memory manager has not been initialized"
 #define PMM_MISALIGNMENT    "ERROR: Attempted to free unaligned address. Pages must be aligned to 1kb (4096 bits)"
