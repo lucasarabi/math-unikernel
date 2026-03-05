@@ -32,6 +32,7 @@ uint8_t serial_init(uint32_t baud_rate) {
     return SERIAL_INIT_SUCCESS;
 }
 
+/*
 static inline int is_transit_empty() {
     return inb(LINE_STATUS_REG) & 0x20;
 }
@@ -40,6 +41,7 @@ static void write_serial(char a) {
     while(is_transit_empty() == 0);
     outb(COM1, a);
 }
+*/
 
 static inline int is_data_ready() {
     return inb(LINE_STATUS_REG) & 0x01;

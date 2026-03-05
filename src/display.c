@@ -44,7 +44,7 @@ void fb_putchar(char c) {
         return;
     }
 
-    const uint8_t *bitmap = font8x8_basic[(uint8_t)c];
+    const char *bitmap = font8x8_basic[(uint8_t)c];
     uint32_t pixels_per_row = fb_pitch / 4;
 
     for (int y = 0; y < 8; y++) {
