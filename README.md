@@ -19,7 +19,11 @@ Build system by running in the following order:
 make -> ./build-iso.sh -> ./qemu.sh
 Reset with ./clean.sh
 
-### FONT CREDIT
-GitHub link: https://github.com/dhepper/font8x8/blob/master/README
-Author: Daniel Hepper <daniel@hepper.net>
-License: Public Domain 
+### Limine link:
+- Source code: https://github.com/limine-bootloader/limine/tree/v7.x
+- Binary: https://github.com/limine-bootloader/limine/tree/v7.x-binary
+
+### Font Credit:
+- GitHub link: https://github.com/dhepper/font8x8/blob/master/README
+- Author: Daniel Hepper <daniel@hepper.net>
+- License: Public Domain 
