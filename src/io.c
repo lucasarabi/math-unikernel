@@ -13,7 +13,7 @@ static inline uint8_t inb(uint16_t port) {
     return ret;
 }
 
-void serial_init(uint32_t baud_rate) {
+uint8_t serial_init(uint32_t baud_rate) {
     uint16_t divisor = 115200 / baud_rate;
     uint8_t divisor_lo = divisor & 0xff;
     uint8_t divisor_hi = (divisor >> 8) & 0xff;
@@ -28,6 +28,8 @@ void serial_init(uint32_t baud_rate) {
     outb(COM1+3, 0x03);     // 8 bits, no parity, one stop bit (standard 8N1)
     outb(COM1+2, 0xc7);     // enable FIFO, clear them, with 14-byte threshold
     outb(COM1+4, 0x0b);     // IRQs enabled, RTS/DSR set
+
+    return SERIAL_INIT_SUCCESS;
 }
 
 static inline int is_transit_empty() {

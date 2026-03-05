@@ -2,6 +2,7 @@
 #define IDT_MU_H
 
 #include <stdint.h>
+#define IDT_INIT_SUCCESS    (1<<2)
 
 struct idt_entry {
     uint16_t isr_low;           // Lower 16 bits of the ISR's address
@@ -40,7 +41,7 @@ extern struct idt_context idt;
 extern void* isr_stub_table[];
 
 void load_idt(struct idt_ptr* ptr);
-void idt_init();
+uint8_t idt_init();
 void exception_handler(struct interrupt_frame* frame);
 
 #endif

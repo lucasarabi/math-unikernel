@@ -2,6 +2,7 @@
 #define GDT_MU_H
 
 #include <stdint.h>
+#define GDT_INIT_SUCCESS    (1<<1)
 
 typedef uint64_t descriptor;
 
@@ -18,6 +19,6 @@ struct gdt_context {
 extern struct gdt_context gdt;
 
 void load_gdt(struct gdt_ptr* ptr);
-void gdt_init();
+uint8_t gdt_init();
 
 #endif

@@ -23,7 +23,7 @@ void idt_set_descriptor(uint8_t vector, uint64_t virt_addr, uint8_t flags) {
     entry->ist = 0;
 }
 
-void idt_init() {
+uint8_t idt_init() {
     memset(&idt.entries, 0, sizeof(idt.entries));
 
     for(uint8_t vector = 0; vector < 32; vector++) {
@@ -35,6 +35,8 @@ void idt_init() {
     idt.pointer.base = (uint64_t)idt.entries;
 
     load_idt(&idt.pointer);
+
+    return IDT_INIT_SUCCESS;
 }
 
 void exception_handler(struct interrupt_frame* frame) {

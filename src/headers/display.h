@@ -2,9 +2,10 @@
 #define DISPLAY_MU_H
 
 #include <stdint.h>
+#define DISPLAY_INIT_SUCCESS    (1<<6)
 
 // Display API
-void display_init(uint32_t *addr, uint32_t pitch, uint32_t width, uint32_t height);
+uint8_t display_init(uint32_t *addr, uint32_t pitch, uint32_t width, uint32_t height);
 void fb_putchar(char c);
 void fb_print(const char *str);
 void fb_print_hex(uint64_t val);

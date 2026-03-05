@@ -47,7 +47,7 @@ void vmm_map_range(uint64_t virt_start, uint64_t phys_start, uint64_t size, uint
     }
 }
 
-void vmm_init(struct limine_kernel_address_response* kernel_addr_response, struct limine_memmap_response* memmap_response) {
+uint8_t vmm_init(struct limine_kernel_address_response* kernel_addr_response, struct limine_memmap_response* memmap_response) {
     vmm_prep_pml4();
     
     vmm_map_range(0x0, 0x0, 0x400000, VMM_PRESENT | VMM_WRITEABLE);
@@ -72,6 +72,8 @@ void vmm_init(struct limine_kernel_address_response* kernel_addr_response, struc
     
     // Load CR3 register with PML4 physical address
     __asm__ volatile ("mov %0, %%cr3" :: "r"(vmm.pml4_phys) : "memory");
+
+    return VMM_INIT_SUCCESS;
 }
 
 uint64_t next_virt_addr = 0xffff900000000000;

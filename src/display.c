@@ -12,7 +12,7 @@ static uint32_t fb_height = 0;
 static uint32_t cursor_x = 0;
 static uint32_t cursor_y = 0;
 
-void display_init(uint32_t *addr, uint32_t pitch, uint32_t width, uint32_t height) {
+uint8_t display_init(uint32_t *addr, uint32_t pitch, uint32_t width, uint32_t height) {
     fb_ptr = addr;
     fb_pitch = pitch;
     fb_width = width;
@@ -21,6 +21,8 @@ void display_init(uint32_t *addr, uint32_t pitch, uint32_t width, uint32_t heigh
     for (uint32_t i = 0; i < (pitch / 4) * height; i++) {
         fb_ptr[i] = 0x111111; 
     }
+
+    return DISPLAY_INIT_SUCCESS;
 }
 
 void fb_putchar(char c) {

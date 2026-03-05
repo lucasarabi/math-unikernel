@@ -61,7 +61,7 @@ static uint64_t get_highest_usable_addr(struct limine_memmap_response* response)
     return largest_addr;
 }
 
-void pmm_init(struct limine_memmap_response* response) {
+uint8_t pmm_init(struct limine_memmap_response* response) {
 
     const uint64_t num_entries = response->entry_count;
     struct limine_memmap_entry** entries = response->entries;
@@ -106,6 +106,8 @@ void pmm_init(struct limine_memmap_response* response) {
         uint64_t frame_index = phys_addr_to_index(addr);
         claim_frame(bitmap, frame_index);
     }
+
+    return PMM_INIT_SUCCESS;
 }
 
 uint64_t pmm_alloc() {

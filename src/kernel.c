@@ -14,24 +14,20 @@
 #include "headers/states.h"
 #include "headers/display.h"
 
-#define MEMMAP_REQUEST_FAILURE          "ERROR: memmap request failed.\n"
-#define HHDM_REQUEST_FAILURE            "ERROR: hhdm request failed.\n"
-#define KERNEL_ADDR_REQUEST_FAILURE     "ERROR: kernel address request failed.\n"
-#define UNSUPPORTED_REVISION_FAILURE    "ERROR: kernel address request failed.\n"
-#define FRAMEBUFFER_REQUEST_FAILURE     "ERROR: framebuffer request failed.\n"
-
+#define LIMINE_HANDSHAKE_SUCCESS        (1<<0)
+#define LIMINE_SUCCESS_LOG              "READY: Limine handshake successful.\n"
+#define GDT_INITIALIZED                 "READY: GDT has been initialized and loaded.\n"
+#define IDT_INITIALIZED                 "READY: IDT has been initialized and loaded.\n"
 #define PMM_INITIALIZED                 "READY: PMM has been initialized.\n"
 #define VMM_INITIALIZED                 "READY: VMM has been initialized and loaded.\n"
-#define IDT_INITIALIZED                 "READY: IDT has been initialized and loaded.\n"
-#define GDT_INITIALIZED                 "READY: GDT has been initialized and loaded.\n"
 #define SIMD_ENABLED                    "READY: AVX/SSE enabled.\n"
-#define DISPLAY_INITIALIZED             "READY: Display initialized.\n"
+#define DISPLAY_INITIALIZED             "READY: Display has been initialized.\n"
+#define SERIAL_DRIVER_INITIALIZED       "READY: Serial drivers have been initialized.\n"
 
 #define STATE_POLLING                   "STATE: Polling\n"
 #define STATE_EXECUTING                 "STATE: Executing\n"
 #define STATE_EXTRACTING                "STATE: Extracting\n"
 
-#define LIMINE_HANDSHAKE_SUCCESS        "Limine handshake successful.\n"
 #define KERNEL_FINISH                   "Finished kernel execution. Exiting.\n"
 
 #define MB (1ULL << 20)
@@ -75,47 +71,37 @@ static volatile struct limine_framebuffer_request framebuffer_request = {
 uint64_t hhdm_offset;
 
 void kernel_main(void) {
+
+    uint16_t init_status = 0;
     
-    serial_init(115200); 
-
-    if(!LIMINE_BASE_REVISION_SUPPORTED) {
-        PRINTS(UNSUPPORTED_REVISION_FAILURE);
-        hcf();
+    if(LIMINE_BASE_REVISION_SUPPORTED 
+        || memmap_request.response != NULL
+        || hhdm_request.response != NULL
+        || kernel_addr_request.response != NULL
+        || framebuffer_request.response != NULL 
+        || framebuffer_request.response->framebuffer_count >= 1) 
+    {
+        init_status |= LIMINE_HANDSHAKE_SUCCESS;
     }
-    if(memmap_request.response == NULL) {
-        PRINTS(MEMMAP_REQUEST_FAILURE);
-        hcf();
-    }
-    if(hhdm_request.response == NULL) {
-        PRINTS(HHDM_REQUEST_FAILURE);
-        hcf();
-    }
-    if(kernel_addr_request.response == NULL) {
-        PRINTS(KERNEL_ADDR_REQUEST_FAILURE);
-        hcf();
-    }
-
-       if (framebuffer_request.response == NULL || framebuffer_request.response->framebuffer_count < 1) {
-        PRINTS(FRAMEBUFFER_REQUEST_FAILURE);
-        hcf();
-    } 
-
-    PRINTS(LIMINE_HANDSHAKE_SUCCESS); 
-
-    hhdm_offset = hhdm_request.response->offset;
-    
-    gdt_init();
-
-    idt_init(); 
-
-    pmm_init(memmap_request.response); 
-
-    vmm_init(kernel_addr_request.response, memmap_request.response);
-
-    enable_simd();
-
     struct limine_framebuffer* fb = framebuffer_request.response->framebuffers[0];
-    display_init((uint32_t *)fb->address, fb->pitch, fb->width, fb->height);
+    hhdm_offset = hhdm_request.response->offset;
+
+    init_status |= gdt_init();
+    init_status |= idt_init(); 
+    init_status |= pmm_init(memmap_request.response); 
+    init_status |= vmm_init(kernel_addr_request.response, memmap_request.response);
+    init_status |= enable_simd();
+    init_status |= display_init((uint32_t *)fb->address, fb->pitch, fb->width, fb->height);
+    init_status |= serial_init(115200);
+
+    if(init_status & LIMINE_HANDSHAKE_SUCCESS)  PRINTS(LIMINE_SUCCESS_LOG);         else hcf();
+    if(init_status & GDT_INIT_SUCCESS)          PRINTS(GDT_INITIALIZED);            else hcf();
+    if(init_status & IDT_INIT_SUCCESS)          PRINTS(IDT_INITIALIZED);            else hcf();
+    if(init_status & PMM_INIT_SUCCESS)          PRINTS(PMM_INITIALIZED);            else hcf();
+    if(init_status & VMM_INIT_SUCCESS)          PRINTS(VMM_INITIALIZED);            else hcf();
+    if(init_status & DISPLAY_INIT_SUCCESS)      PRINTS(DISPLAY_INITIALIZED);        else hcf();
+    if(init_status & SERIAL_INIT_SUCCESS)       PRINTS(SERIAL_DRIVER_INITIALIZED);  else hcf();
+    PRINTLN;
 
     enum states state = POLLING; 
     bool running = true;
@@ -143,6 +129,7 @@ void kernel_main(void) {
                 poll_payload(payload_mem, payload_byte_count);
                 PRINTTAB; PRINTS("Workload downloaded."); PRINTLN;
 
+                PRINTLN;
                 state = EXECUTING;
                 break;
 
@@ -151,13 +138,15 @@ void kernel_main(void) {
 
                 // run();
 
+                PRINTLN;
                 state = EXTRACTING;
                 break;
 
             case EXTRACTING:
                 PRINTS(STATE_EXTRACTING);
 
-                state = POLLING; // temp
+                PRINTLN;            // temp    
+                state = POLLING;    // temp
                 // running = false;
                 break;
         }

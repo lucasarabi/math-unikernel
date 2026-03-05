@@ -13,7 +13,7 @@ descriptor create_descriptor(uint8_t access_byte, uint8_t flags) {
     return ((uint64_t)access_byte << 40) | ((uint64_t)flags <<52);
 }
 
-void gdt_init() {
+uint8_t gdt_init() {
     gdt.entries[0] = create_descriptor(NULL_ACCESS_BYTE, NULL_FLAGS);
     gdt.entries[1] = create_descriptor(CODE_ACCESS_BYTE, CODE_FLAGS);
     gdt.entries[2] = create_descriptor(DATA_ACCESS_BYTE, DATA_FLAGS);
@@ -22,4 +22,6 @@ void gdt_init() {
     gdt.pointer.limit = (uint16_t)(sizeof(gdt.entries) - 1);
 
     load_gdt(&gdt.pointer);
+
+    return GDT_INIT_SUCCESS;
 }
