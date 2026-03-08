@@ -3,16 +3,6 @@
 #define COM1 0x3f8
 #define LINE_STATUS_REG (COM1 + 5)
 
-static inline void outb(uint16_t port, uint8_t val) {
-    __asm__ volatile ("outb %b0, %w1" :: "a"(val), "Nd"(port) : "memory");
-}
-
-static inline uint8_t inb(uint16_t port) {
-    uint8_t ret;
-    __asm__ volatile ("inb %w1, %b0" : "=a"(ret) : "Nd"(port));
-    return ret;
-}
-
 uint8_t serial_init(uint32_t baud_rate) {
     uint16_t divisor = 115200 / baud_rate;
     uint8_t divisor_lo = divisor & 0xff;

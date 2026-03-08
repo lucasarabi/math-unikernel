@@ -13,8 +13,10 @@
 #include "headers/loader.h"
 #include "headers/states.h"
 #include "headers/display.h"
+#include "headers/pci.h"
 
 #define LIMINE_HANDSHAKE_SUCCESS        (1<<0)
+
 #define LIMINE_SUCCESS_LOG              "READY: Limine handshake successful.\n"
 #define GDT_INITIALIZED                 "READY: GDT has been initialized and loaded.\n"
 #define IDT_INITIALIZED                 "READY: IDT has been initialized and loaded.\n"
@@ -23,6 +25,16 @@
 #define SIMD_ENABLED                    "READY: AVX/SSE enabled.\n"
 #define DISPLAY_INITIALIZED             "READY: Display has been initialized.\n"
 #define SERIAL_DRIVER_INITIALIZED       "READY: Serial drivers have been initialized.\n"
+#define NETWORK_CONTROLLER_FOUND        "READY: Network Contoller found on PCI bus.\n"
+
+#define LIMINE_FAILURE_LOG              "ERROR: Limine handshake failed.\n"
+#define GDT_FAILURE                     "ERROR: GDT initialization failed.\n"
+#define IDT_FAILURE                     "ERROR: IDT initialization failed.\n"
+#define PMM_FAILURE                     "ERROR: PMM initialization failed.\n"
+#define VMM_FAILURE                     "ERROR: VMM initialization failed.\n"
+#define SIMD_FAILURE                    "ERROR: AVX/SSE not supported by CPU.\n"
+#define SERIAL_DRIVER_FAILURE           "ERROR: Serial driver initialization failed.\n"
+#define NETWORK_CONTROLLER_MISSING      "ERROR: Network Controller not found on PCI bus.\n"
 
 #define STATE_POLLING                   "STATE: Polling\n"
 #define STATE_EXECUTING                 "STATE: Executing\n"
@@ -93,14 +105,16 @@ void kernel_main(void) {
     init_status |= enable_simd();
     init_status |= display_init((uint32_t *)fb->address, fb->pitch, fb->width, fb->height);
     init_status |= serial_init(115200);
+    init_status |= pci_scan_bus();
 
-    if(init_status & LIMINE_HANDSHAKE_SUCCESS)  PRINTS(LIMINE_SUCCESS_LOG);         else hcf();
-    if(init_status & GDT_INIT_SUCCESS)          PRINTS(GDT_INITIALIZED);            else hcf();
-    if(init_status & IDT_INIT_SUCCESS)          PRINTS(IDT_INITIALIZED);            else hcf();
-    if(init_status & PMM_INIT_SUCCESS)          PRINTS(PMM_INITIALIZED);            else hcf();
-    if(init_status & VMM_INIT_SUCCESS)          PRINTS(VMM_INITIALIZED);            else hcf();
-    if(init_status & DISPLAY_INIT_SUCCESS)      PRINTS(DISPLAY_INITIALIZED);        else hcf();
-    if(init_status & SERIAL_INIT_SUCCESS)       PRINTS(SERIAL_DRIVER_INITIALIZED);  else hcf();
+    if(init_status & LIMINE_HANDSHAKE_SUCCESS)  PRINTS(LIMINE_SUCCESS_LOG);         else { PRINTS(LIMINE_FAILURE_LOG);          hcf();}
+    if(init_status & GDT_INIT_SUCCESS)          PRINTS(GDT_INITIALIZED);            else { PRINTS(GDT_FAILURE);                 hcf();}
+    if(init_status & IDT_INIT_SUCCESS)          PRINTS(IDT_INITIALIZED);            else { PRINTS(IDT_FAILURE);                 hcf();}
+    if(init_status & PMM_INIT_SUCCESS)          PRINTS(PMM_INITIALIZED);            else { PRINTS(PMM_FAILURE);                 hcf();}
+    if(init_status & VMM_INIT_SUCCESS)          PRINTS(VMM_INITIALIZED);            else { PRINTS(VMM_FAILURE);                 hcf();}
+    if(init_status & DISPLAY_INIT_SUCCESS)      PRINTS(DISPLAY_INITIALIZED);        else { /* You'll know lol*/                 hcf();}
+    if(init_status & SERIAL_INIT_SUCCESS)       PRINTS(SERIAL_DRIVER_INITIALIZED);  else { PRINTS(SERIAL_DRIVER_FAILURE);       hcf();}
+    if(init_status & PCI_INIT_SUCCESS)          PRINTS(NETWORK_CONTROLLER_FOUND);   else { PRINTS(NETWORK_CONTROLLER_MISSING);  hcf();}
     PRINTLN;
 
     enum states state = POLLING; 
