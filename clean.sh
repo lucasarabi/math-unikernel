@@ -10,6 +10,7 @@ echo "Cleaning Math Unikernel project..."
 if [ -d "$SRC_DIR" ]; then
     echo "  -> Removing object files in $SRC_DIR"
     rm -f "$SRC_DIR"/*.o
+    rm -f "$SRC_DIR"/nic_drivers/*.o
 fi
 
 if [ -f "$KERNEL_BIN" ]; then
