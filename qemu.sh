@@ -17,4 +17,5 @@ qemu-system-x86_64 \
     -no-reboot \
     -no-shutdown \
     -cpu max \
-    -device e1000
+    -device rtl8139,netdev=u1 \
+    -netdev user,id=u1

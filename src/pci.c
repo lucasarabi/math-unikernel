@@ -6,11 +6,13 @@
 #define PCI_CONFIG_DATA     0xcfc
 
 // Vendor IDs for different NICs
-#define INTEL_VENDOR_ID     0x8086      // Intel e1000  (old hardware, currently emulated in QEMU setup)
-#define KILLER_VENDOR_ID    0x1969      // Killer E2400 (as found in my Dell G7)
+#define INTEL_VENDOR_ID     0x8086      // Intel   (old hardware, currently emulated in QEMU setup)
+#define KILLER_VENDOR_ID    0x1969      // Killer  (as found in my Dell G7)
+#define REALTEK_VENDOR_ID   0x10ec      // Realtek (inside friend's gaming laptop, we will likely use this for showcase)
 
 #define FOUND_INTEL_ID      "PCI: Found Intel NIC.\n"
 #define FOUND_KILLER_ID     "PCI: Found Killer NIC.\n"
+#define FOUND_REALTEK_ID     "PCI: Found Realtek NIC.\n"
 
 uint32_t pci_read_dword(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset)
 {
@@ -52,6 +54,11 @@ uint16_t pci_scan_bus()
                         case KILLER_VENDOR_ID:
                             PRINTS(FOUND_KILLER_ID);
                             // killer_init(bus, slot, bar0);
+                        break;
+
+                        case REALTEK_VENDOR_ID:
+                            PRINTS(FOUND_REALTEK_ID);
+                            // rt8139_init(bus, slot, bar0);
                         break;
                     }
 
