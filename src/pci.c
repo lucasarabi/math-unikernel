@@ -9,8 +9,8 @@
 #define INTEL_VENDOR_ID     0x8086      // Intel e1000  (old hardware, currently emulated in QEMU setup)
 #define KILLER_VENDOR_ID    0x1969      // Killer E2400 (as found in my Dell G7)
 
-#define START_SCAN      "PCI: Starting scan...\n"
-#define SCAN_COMPLETE "PCI: Scan complete.\n"
+#define FOUND_INTEL_ID      "PCI: Found Intel NIC.\n"
+#define FOUND_KILLER_ID     "PCI: Found Killer NIC.\n"
 
 uint32_t pci_read_dword(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset)
 {
@@ -41,10 +41,21 @@ uint16_t pci_scan_bus()
 
                 if (base_class == 0x02 && sub_class == 0x00)
                 {
-                    if (vendor == INTEL_VENDOR_ID || vendor == KILLER_VENDOR_ID)
-                    {
-                        return PCI_INIT_SUCCESS;
+                    uint32_t bar0 = pci_read_dword(bus, slot, 0, 0x10);
+
+                    switch(vendor) {
+                        case INTEL_VENDOR_ID:
+                            PRINTS(FOUND_INTEL_ID);
+                            // e1000_init(bus, slot, bar0);
+                        break;
+
+                        case KILLER_VENDOR_ID:
+                            PRINTS(FOUND_KILLER_ID);
+                            // killer_init(bus, slot, bar0);
+                        break;
                     }
+
+                    return PCI_INIT_SUCCESS;
                 }
             }
         }
