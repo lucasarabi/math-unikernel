@@ -63,11 +63,12 @@ static uint32_t bytes_left_in_packet = 0;
 static uint8_t* current_data_ptr = 0; // Use a pointer instead of an offset
 
 uint8_t read_ethernet() {
+    // If bytes in buffer, do not exectue loop, and return them immediately
     while (bytes_left_in_packet == 0) {
+        // If register buffer is not empty, parse packet
         if (!(inb(global_bar0 + 0x37) & 0x01)) {
-            
             uint8_t* packet_header = &rx_buffer[rx_read_ptr];
-            uint16_t total_len = *(uint16_t*)(packet_header + 2);
+            uint16_t total_len = *(uint16_t*)(packet_header + 2); // Get packet length
 
             // Point exactly to the data (Skip 4 NIC + 14 Ethernet bytes)
             current_data_ptr = packet_header + 18;
@@ -83,6 +84,7 @@ uint8_t read_ethernet() {
             if(rx_read_ptr >= 8192) 
                 rx_read_ptr -= 8192;
 
+            // Hardware sync -- CPU has parsed up to current rx_read_ptr
             outw(global_bar0 + 0x38, rx_read_ptr - 16);
         }
     }
