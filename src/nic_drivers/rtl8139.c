@@ -2,6 +2,7 @@
 #include "../headers/io.h"
 #include "../headers/display.h"
 #include "../headers/hhdm_offset.h"
+#include "../headers/pmm.h"
 
 #define DRIVER_LOADED           "NIC: RTL8139 driver loaded. BAR0 address: "
 #define RESET_COMPLETE          "NIC: Reset complete.\n"
@@ -40,10 +41,15 @@ void rtl8139_init(uint32_t bar0) {
     }
     PRINTLN;
 
-    outb(bar0 + 0x50, 0xc0);
+    outb(bar0 + 0x50, 0xc0); // Unlock chip to change protected settings
 
-    rx_buffer = (uint8_t*)(hhdm_offset + 0x02000000);
-    outl(bar0 + 0x30, 0x02000000);
+    // Prepare Receive Buffer and provide it to NIC for DMA
+    uint64_t phys_addr = pmm_alloc_contiguous(4);
+    rx_buffer = (uint8_t*)(phys_addr + hhdm_offset);
+    for(uint64_t i = 0; i < 4 * 4096; i++) {
+        rx_buffer[i] = 0;
+    }
+    outl(bar0 + 0x30, phys_addr); // Give hardware physical address
 
     outl(bar0 + 0x44, 0x8f);    // Filter rules
     outb(bar0 + 0x37, 0x0c);    // Enable use of RX bucket
