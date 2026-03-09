@@ -207,10 +207,15 @@ uint64_t pmm_alloc_contiguous(uint64_t num_frames) {
     uint64_t start_frame = 0;
 
     for (uint64_t i = 0; i < total_frames; i++) {
-        uint64_t byte_idx = i / 8;
-        uint8_t bit_idx = i % 8;
+        uint64_t byte_index = i / 8;
+        uint8_t bit_index = i % 8;
 
-        if (!(bitmap[byte_idx] & (1 << bit_idx))) {
+        if(bit_index == 0 && bitmap[byte_index] == 0xff) {
+            found_frames = 0;
+            i+=7;
+        }
+
+        if (!(bitmap[byte_index] & (1 << bit_index))) {
             if (found_frames == 0) start_frame = i;
             found_frames++;
 
