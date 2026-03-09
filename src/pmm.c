@@ -196,3 +196,34 @@ void pmm_free_2mb(uint64_t phys_addr) {
         bitmap[i] = 0x00;
     }
 }
+
+/* Claim contiguous frames */
+
+uint64_t pmm_alloc_contiguous(uint64_t num_frames) {
+    uint8_t* bitmap = pmm.bitmap;
+    uint64_t total_frames = pmm.total_frames;
+    
+    uint64_t found_frames = 0;
+    uint64_t start_frame = 0;
+
+    for (uint64_t i = 0; i < total_frames; i++) {
+        uint64_t byte_idx = i / 8;
+        uint8_t bit_idx = i % 8;
+
+        if (!(bitmap[byte_idx] & (1 << bit_idx))) {
+            if (found_frames == 0) start_frame = i;
+            found_frames++;
+
+            if (found_frames == num_frames) {
+                for (uint64_t j = 0; j < num_frames; j++) {
+                    claim_frame(bitmap, start_frame + j);
+                }
+                return index_to_phys_addr(start_frame);
+            }
+        } else {
+            found_frames = 0;
+        }
+    }
+
+    return 0; 
+}

@@ -25,4 +25,7 @@ void pmm_free(uint64_t phys_addr);
 uint64_t pmm_alloc_2mb();
 void pmm_free_2mb(uint64_t phys_addr);
 
+// Contigious frames API
+uint64_t pmm_alloc_contiguous(uint64_t num_frames);
+
 #endif
