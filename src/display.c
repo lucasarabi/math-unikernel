@@ -1,8 +1,7 @@
 #include "headers/display.h"
 #include "headers/font8x8_basic.h"
 
-#define SCALE 3 
-
+#define SCALE 1
 // Terminal State
 static uint32_t *fb_ptr = 0;
 static uint32_t fb_pitch = 0;
