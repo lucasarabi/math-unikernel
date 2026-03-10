@@ -43,4 +43,21 @@ void e1000_init(uint32_t bar0) {
     volatile uint32_t mac_lo = *(volatile uint32_t*) ( (uint8_t*)mmio_base_virt + RAL0 );
     volatile uint32_t mac_hi = *(volatile uint32_t*) ( (uint8_t*)mmio_base_virt + RAH0 );
 
+    uint8_t mac_bytes[6];
+    mac_bytes[0] = mac_lo & 0xff;
+    mac_bytes[1] = (mac_lo >> 8) & 0xff;
+    mac_bytes[2] = (mac_lo >> 16) & 0xff;
+    mac_bytes[3] = (mac_lo >> 24) & 0xff;
+    mac_bytes[4] = mac_hi & 0xff;
+    mac_bytes[5] = (mac_hi >> 8) & 0xff;
+
+    PRINTS(MAC_ADDRESS);
+    for(uint8_t i = 0; i < 6; i++) {
+        print_mac_byte(mac_bytes[i]);
+        if(i < 5) PRINTS(":");
+    }
+    PRINTLN;
+
+    
+
 }
