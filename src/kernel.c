@@ -138,7 +138,7 @@ void kernel_main(void) {
                 if(payload_byte_count % (2*MB) != 0)
                     num_pages++;
 
-                uint8_t* payload_mem = vmm_alloc_huge_page(num_pages, VMM_WRITEABLE);
+                uint8_t* payload_mem = vmm_alloc_huge_page(num_pages, VMM_PRESENT | VMM_WRITEABLE);
 
                 PRINTTAB; PRINTS("Downloading workload."); PRINTLN;
                 poll_payload(payload_mem, payload_byte_count);
@@ -151,7 +151,10 @@ void kernel_main(void) {
             case EXECUTING:
                 PRINTS(STATE_EXECUTING);
 
-                // run();
+                // Data we have:
+                    // Payload byte count
+                    // Number of pages
+                    // Pointer to virtual memory containing workload bytes
 
                 PRINTLN;
                 state = EXTRACTING;

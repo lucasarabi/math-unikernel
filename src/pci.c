@@ -13,7 +13,7 @@
 
 #define FOUND_INTEL_ID      "PCI: Found Intel NIC.\n"
 #define FOUND_KILLER_ID     "PCI: Found Killer NIC.\n"
-#define FOUND_REALTEK_ID     "PCI: Found Realtek NIC.\n"
+#define FOUND_REALTEK_ID    "PCI: Found Realtek NIC.\n"
 
 uint32_t pci_read_dword(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset) {
     uint32_t lbus = (uint32_t)bus;
@@ -40,41 +40,42 @@ void pci_write_dword(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset, ui
 uint16_t pci_scan_bus() {
     for (uint16_t bus = 0; bus < 256; bus++) {
         for (uint8_t slot = 0; slot < 32; slot++) {
-            uint32_t reg0 = pci_read_dword(bus, slot, 0, 0);
-            uint16_t vendor = reg0 & 0xffff;
+            for (uint8_t func = 0; func < 8; func++) {
+                uint32_t reg0 = pci_read_dword(bus, slot, func, 0);
+                uint16_t vendor = reg0 & 0xffff;
 
-            if (vendor != 0xffff) {
-                uint32_t reg3 = pci_read_dword(bus, slot, 0, 0x08);
-                uint8_t base_class = (reg3 >> 24) & 0xff;
-                uint8_t sub_class = (reg3 >> 16) & 0xff;
+                // If vendor is 0xFFFF, this specific function doesn't exist
+                if (vendor != 0xffff) {
+                    uint32_t reg3 = pci_read_dword(bus, slot, func, 0x08);
+                    uint8_t base_class = (reg3 >> 24) & 0xff;
+                    uint8_t sub_class = (reg3 >> 16) & 0xff;
 
-                if (base_class == 0x02 && sub_class == 0x00) {
-                    uint32_t bar0 = pci_read_dword(bus, slot, 0, 0x10) & 0xfffffffc;
+                    if (base_class == 0x02 && sub_class == 0x00) {
+                        uint32_t bar0 = pci_read_dword(bus, slot, func, 0x10) & 0xfffffffc;
 
-                    switch(vendor) {
-                        case INTEL_VENDOR_ID:
-                            PRINTS(FOUND_INTEL_ID);
-                            // e1000_init(bus, slot, bar0);
-                        break;
+                        switch(vendor) {
+                            case INTEL_VENDOR_ID:
+                                PRINTS(FOUND_INTEL_ID);
+                                // e1000_init(bus, slot, func, bar0); // Note: pass func here too!
+                            break;
 
-                        case KILLER_VENDOR_ID:
-                            PRINTS(FOUND_KILLER_ID);
-                            // killer_init(bus, slot, bar0);
-                        break;
+                            case KILLER_VENDOR_ID:
+                                PRINTS(FOUND_KILLER_ID);
+                            break;
 
-                        case REALTEK_VENDOR_ID:
-                            PRINTS(FOUND_REALTEK_ID);
+                            case REALTEK_VENDOR_ID:
+                                PRINTS(FOUND_REALTEK_ID);
+                                // Enable bus mastering
+                                uint32_t cmd_reg = pci_read_dword(bus, slot, func, 0x04);
+                                cmd_reg |= 0x00000004; 
+                                pci_write_dword(bus, slot, func, 0x04, cmd_reg);
 
-                            // Enable bus mastering for NIC to have DMA permissions
-                            uint32_t cmd_reg = pci_read_dword(bus, slot, 0, 0x04);
-                            cmd_reg |= 0x00000004; 
-                            pci_write_dword(bus, slot, 0, 0x04, cmd_reg);
+                                rtl8139_init(bar0);
+                            break;
+                        }
 
-                            rtl8139_init(bar0);
-                        break;
+                        return PCI_INIT_SUCCESS;
                     }
-
-                    return PCI_INIT_SUCCESS;
                 }
             }
         }
