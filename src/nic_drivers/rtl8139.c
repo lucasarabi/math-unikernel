@@ -9,7 +9,7 @@
 #define MAC_ADDRESS             "NIC: MAC Address: "
 #define RX_BUFFER_LISTENING     "NIC: RX Buffer configured and listening.\n"
 
-void print_mac_byte(uint8_t byte) {
+static void print_mac_byte(uint8_t byte) {
     const char hex_chars[] = "0123456789ABCDEF";
     char str[3];
     str[0] = hex_chars[(byte >> 4) & 0x0F]; 

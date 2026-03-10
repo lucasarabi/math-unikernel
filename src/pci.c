@@ -2,6 +2,7 @@
 #include "headers/io.h"
 #include "headers/display.h"
 #include "nic_drivers/rtl8139.h"
+#include "nic_drivers/e1000.h"
 
 #define PCI_CONFIG_ADDRESS  0xcf8
 #define PCI_CONFIG_DATA     0xcfc
@@ -56,7 +57,7 @@ uint16_t pci_scan_bus() {
                         switch(vendor) {
                             case INTEL_VENDOR_ID:
                                 PRINTS(FOUND_INTEL_ID);
-                                // e1000_init(bus, slot, func, bar0); // Note: pass func here too!
+                                e1000_init(bar0); // Note: pass func here too!
                             break;
 
                             case KILLER_VENDOR_ID:
