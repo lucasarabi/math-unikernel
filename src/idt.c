@@ -10,6 +10,14 @@
 
 struct idt_context idt; 
 
+void* irq_handlers[16] = {0};
+
+void register_irq_handler(uint8_t irq, void* handler) {
+    if (irq < 16) {
+        irq_handlers[irq] = handler;
+    }
+}
+
 void idt_set_descriptor(uint8_t vector, uint64_t virt_addr, uint8_t flags) {
     struct idt_entry* entry = &idt.entries[vector];
 
@@ -26,7 +34,7 @@ void idt_set_descriptor(uint8_t vector, uint64_t virt_addr, uint8_t flags) {
 uint8_t idt_init() {
     memset(&idt.entries, 0, sizeof(idt.entries));
 
-    for(uint8_t vector = 0; vector < 32; vector++) {
+    for(uint8_t vector = 0; vector < 48; vector++) {
         idt_set_descriptor(vector, (uint64_t)isr_stub_table[vector], FULL_KERNEL_AUTHORITY);
     }
 
@@ -39,19 +47,35 @@ uint8_t idt_init() {
     return IDT_INIT_SUCCESS;
 }
 
-void exception_handler(struct interrupt_frame* frame) {
-    idt.total_interrupts++;
+void interrupt_dispatcher(struct interrupt_frame* frame) {
+    if (frame->interrupt_number < 32) {
+        idt.total_interrupts++;
 
-    PRINTS("\n--- !!! MATH UNIKERNEL PANIC !!! ---\n");
-    PRINTS("Exception Vector: "); PRINTD(frame->interrupt_number); PRINTLN;
-    PRINTS("Error Code:       "); PRINTH(frame->error_code); PRINTLN;
-    PRINTS("RIP (Address):    "); PRINTH(frame->rip); PRINTLN;
-    
-    PRINTS("\n--- REGISTER SNAPSHOT ---\n");
-    PRINTF("RAX:", frame->rax); PRINTF("RBX:", frame->rbx); PRINTLN;
-    PRINTF("RCX:", frame->rcx); PRINTF("RDX:", frame->rdx); PRINTLN;
-    PRINTF("RDI:", frame->rdi); PRINTF("RSI:", frame->rsi); PRINTLN;
-    
-    PRINTS("\nHalting system to prevent data corruption...\n");
-    hcf();
+        PRINTS("\n--- !!! MATH UNIKERNEL PANIC !!! ---\n");
+        PRINTS("Exception Vector: "); PRINTD(frame->interrupt_number); PRINTLN;
+        PRINTS("Error Code:       "); PRINTH(frame->error_code); PRINTLN;
+        PRINTS("RIP (Address):    "); PRINTH(frame->rip); PRINTLN;
+
+        PRINTS("\n--- REGISTER SNAPSHOT ---\n");
+        PRINTF("RAX:", frame->rax); PRINTF("RBX:", frame->rbx); PRINTLN;
+        PRINTF("RCX:", frame->rcx); PRINTF("RDX:", frame->rdx); PRINTLN;
+        PRINTF("RDI:", frame->rdi); PRINTF("RSI:", frame->rsi); PRINTLN;
+
+        PRINTS("\nHalting system to prevent data corruption...\n");
+        hcf();
+    }
+    else if (frame->interrupt_number >= 32 && frame->interrupt_number <= 47) {
+        // --- HARDWARE IRQ (HANDLE AND RESUME) ---
+        uint8_t irq = frame->interrupt_number - 32;
+
+        // Run the driver's function if it registered one
+        void (*handler)() = irq_handlers[irq];
+        if (handler) {
+            handler();
+        }
+
+        // Acknowledge the PIC so it doesn't block future interrupts
+        pic_send_eoi(irq);
+    }
 }
+

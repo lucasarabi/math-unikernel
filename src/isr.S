@@ -7,7 +7,7 @@ load_idt:
 
 # Common bridge
 .section .text
-.extern exception_handler
+.extern interrupt_dispatcher
 isr_common:
 	# Save 15 general-purpose registers
 	pushq %rax; pushq %rbx; pushq %rcx; pushq %rdx
@@ -17,7 +17,7 @@ isr_common:
 
 	# Pass current stack pointer as first arg to C 
 	movq %rsp, %rdi
-	call exception_handler
+	call interrupt_dispatcher
 
 	# Restore snapshot in reverse order
     popq %r15; popq %r14; popq %r13; popq %r12
@@ -78,6 +78,22 @@ isr_no_err 28
 isr_err    29  # VMM Communication Exception
 isr_err    30  # Security Exception
 isr_no_err 31
+isr_no_err 32
+isr_no_err 33
+isr_no_err 34
+isr_no_err 35
+isr_no_err 36
+isr_no_err 37
+isr_no_err 38
+isr_no_err 39
+isr_no_err 40
+isr_no_err 41
+isr_no_err 42
+isr_no_err 43
+isr_no_err 44
+isr_no_err 45
+isr_no_err 46
+isr_no_err 47
 
 # Initialize isr_stub_table
 .section .data
@@ -98,4 +114,4 @@ isr_no_err 31
 .endm
 
 isr_stub_table:
-    gen_isr_table 32
+    gen_isr_table 48

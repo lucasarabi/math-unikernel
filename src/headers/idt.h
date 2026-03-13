@@ -42,6 +42,6 @@ extern void* isr_stub_table[];
 
 void load_idt(struct idt_ptr* ptr);
 uint8_t idt_init();
-void exception_handler(struct interrupt_frame* frame);
+void interrupt_dispatcher(struct interrupt_frame* frame);
 
 #endif
