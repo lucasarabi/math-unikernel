@@ -1,5 +1,6 @@
 #include "headers/idt.h"
 #include "headers/lib.h"
+#include "headers/pic.h"
 #include "headers/display.h"
 
 #define GDT_KERNEL 0x08 
