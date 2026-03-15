@@ -14,6 +14,7 @@
 #include "headers/states.h"
 #include "headers/display.h"
 #include "headers/pci.h"
+#include "headers/pic.h"
 
 #define LIMINE_HANDSHAKE_SUCCESS        (1<<0)
 
@@ -98,6 +99,8 @@ void kernel_main(void) {
     struct limine_framebuffer* fb = framebuffer_request.response->framebuffers[0];
     hhdm_offset = hhdm_request.response->offset;
 
+    pic_remap(32, 40);
+
     init_status |= gdt_init();
     init_status |= idt_init(); 
     init_status |= pmm_init(memmap_request.response); 
@@ -117,6 +120,9 @@ void kernel_main(void) {
     if(init_status & SERIAL_INIT_SUCCESS)       PRINTS(SERIAL_DRIVER_INITIALIZED);  else { PRINTS(SERIAL_DRIVER_FAILURE);       hcf();}
     if(init_status & PCI_INIT_SUCCESS)          PRINTS(NETWORK_CONTROLLER_FOUND);   else { PRINTS(NETWORK_CONTROLLER_MISSING);  hcf();}
     PRINTLN;
+
+    // Enable maskable hardware interrupts after completing boot sequence
+    __asm__ volatile("sti");
 
     enum states state = POLLING; 
     bool running = true;

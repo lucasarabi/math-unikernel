@@ -40,8 +40,10 @@ struct interrupt_frame {
 extern struct idt_context idt;
 extern void* isr_stub_table[];
 
+// Interrupt Descriptor Table API
 void load_idt(struct idt_ptr* ptr);
 uint8_t idt_init();
 void interrupt_dispatcher(struct interrupt_frame* frame);
+void register_irq_handler(uint8_t irq, void* handler);
 
 #endif

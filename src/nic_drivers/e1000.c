@@ -4,6 +4,8 @@
 #include "../headers/hhdm_offset.h"
 #include "../headers/pmm.h"
 #include "../headers/vmm.h"
+#include "../headers/pic.h"
+#include "../headers/idt.h"
 
 #define MMIO_MAPPED         "NIC: Intel I219-LM MMIO mapped.\n"
 #define MAC_ADDRESS         "NIC: MAC Address: "
@@ -21,6 +23,8 @@
 #define RDH       0x2810  // RX Descriptor Head
 #define RDT       0x2818  // RX Descriptor Tail
 #define RCTL      0x0100  // Receive Control
+#define IMS       0x00d0  // Interrupt Mask Set offset
+#define ICR       0x00c0  // Interrupt Cause Read
 
 static void print_mac_byte(uint8_t byte) {
     const char hex_chars[] = "0123456789ABCDEF";
@@ -34,6 +38,8 @@ static void print_mac_byte(uint8_t byte) {
 static volatile uint64_t mmio_base_virt; 
 static volatile struct e1000_rx_descriptor* rx_ring_virt;
 static uint8_t* rx_buffers_virt[NUM_RX_DESCRIPTORS];
+
+void e1000_interrupt_handler();
 
 void e1000_init(uint32_t bar0, uint8_t irq) {
     // Map MMIO
@@ -93,5 +99,23 @@ void e1000_init(uint32_t bar0, uint8_t irq) {
     // Bit 1 (EN) turns it on. Bit 26 (SECRC) strips the ethernet checksum so we only get the payload.
     *(volatile uint32_t*)((uint8_t*)mmio_base_virt + RCTL) = (1 << 1) | (1 << 26);
 
+    // Authorize NIC to fire interrupts
+    // Flipping Bit 7 turns it on.
+    *(volatile uint32_t*)((uint8_t*)mmio_base_virt + IMS) = (1 << 7);
+
+    // Enable only the specified IRQ line
+    pic_unmask(irq);
+
+    // Register e1000 interrupt handler
+    register_irq_handler(irq, e1000_interrupt_handler);
+
     PRINTS(HANDSHAKE_COMPLETE);
+}
+
+void e1000_interrupt_handler() {
+    // 1. You MUST read the ICR register to clear the hardware state. 
+    // If you don't do this, the silicon will freeze your CPU in an infinite loop!
+    volatile uint32_t icr = *(volatile uint32_t*)((uint8_t*)mmio_base_virt + ICR);
+
+    PRINTS("\n>>> E1000 INTERRUPT FIRED! PACKET RECEIVED! <<<\n");
 }
