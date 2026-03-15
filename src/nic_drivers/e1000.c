@@ -35,7 +35,7 @@ static volatile uint64_t mmio_base_virt;
 static volatile struct e1000_rx_descriptor* rx_ring_virt;
 static uint8_t* rx_buffers_virt[NUM_RX_DESCRIPTORS];
 
-void e1000_init(uint32_t bar0) {
+void e1000_init(uint32_t bar0, uint8_t irq) {
     // Map MMIO
     uint64_t mmio_base_phys = bar0 & ~0xf;
     mmio_base_virt = mmio_base_phys + hhdm_offset;

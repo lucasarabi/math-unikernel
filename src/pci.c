@@ -13,7 +13,6 @@
 #define REALTEK_VENDOR_ID   0x10ec      // Realtek (inside friend's gaming laptop, we will likely use this for showcase)
 
 #define FOUND_INTEL_ID      "PCI: Found Intel NIC.\n"
-#define FOUND_KILLER_ID     "PCI: Found Killer NIC.\n"
 #define FOUND_REALTEK_ID    "PCI: Found Realtek NIC.\n"
 
 uint32_t pci_read_dword(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset) {
@@ -54,23 +53,21 @@ uint16_t pci_scan_bus() {
                     if (base_class == 0x02 && sub_class == 0x00) {
                         uint32_t bar0 = pci_read_dword(bus, slot, func, 0x10) & 0xfffffffc;
 
+                        // Enable bus mastering
+                        uint32_t cmd_reg = pci_read_dword(bus, slot, func, 0x04);
+                        cmd_reg |= 0x00000004; 
+                        pci_write_dword(bus, slot, func, 0x04, cmd_reg);
+
+                        uint8_t irq_line = pci_read_dword(bus, slot, func, 0x3c) & 0xff;
+
                         switch(vendor) {
                             case INTEL_VENDOR_ID:
                                 PRINTS(FOUND_INTEL_ID);
-                                e1000_init(bar0); // Note: pass func here too!
-                            break;
-
-                            case KILLER_VENDOR_ID:
-                                PRINTS(FOUND_KILLER_ID);
+                                e1000_init(bar0, irq_line);
                             break;
 
                             case REALTEK_VENDOR_ID:
                                 PRINTS(FOUND_REALTEK_ID);
-                                // Enable bus mastering
-                                uint32_t cmd_reg = pci_read_dword(bus, slot, func, 0x04);
-                                cmd_reg |= 0x00000004; 
-                                pci_write_dword(bus, slot, func, 0x04, cmd_reg);
-
                                 rtl8139_init(bar0);
                             break;
                         }

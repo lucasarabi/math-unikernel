@@ -13,6 +13,6 @@ struct e1000_rx_descriptor {
     uint16_t special;   // VLAN tags (We ignore this)
 } __attribute__((packed));
 
-void e1000_init(uint32_t bar0);
+void e1000_init(uint32_t bar0, uint8_t irq);
 
 #endif
