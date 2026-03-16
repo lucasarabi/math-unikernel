@@ -15,6 +15,7 @@
 #define FOUND_INTEL_ID      "PCI: Found Intel NIC.\n"
 #define FOUND_REALTEK_ID    "PCI: Found Realtek NIC.\n"
 #define WAKE_NIC            "PCI: Waking NIC from D3 sleep state.\n"
+#define IRQ_LINE            "PCI: IRQ line: "
 
 uint32_t pci_read_dword(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset) {
     uint32_t lbus = (uint32_t)bus;
@@ -113,7 +114,15 @@ uint16_t pci_scan_bus() {
                 command_reg |= (1<<2);
                 pci_write_dword(bus, slot, func, 0x04, command_reg);
 
+                // Get IRQ wire number
                 uint8_t irq_line = pci_read_dword(bus, slot, func, 0x3c) & 0xff;
+                if (irq_line == 0xff) {
+                    irq_line = 11;
+                    uint32_t irq_reg = pci_read_dword(bus, slot, func, 0x3c);
+                    irq_reg = (irq_reg & 0xffffff00) | 11;
+                    pci_write_dword(bus, slot, func, 0x3c, irq_reg);
+                }
+                PRINTS(IRQ_LINE); PRINTD(irq_line); PRINTLN;  
 
                 switch (vendor)
                 {

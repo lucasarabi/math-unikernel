@@ -42,8 +42,7 @@ void network_receive_frame(uint8_t* data, uint16_t length) {
 // Blocks (spins) until a byte is available.
 uint8_t read_ethernet() {
     while (rx_buf_read >= rx_buf_len) {
-        // Buffer exhausted — wait for the next frame to arrive
-        i219_poll_rx();
+        __asm__ volatile("hlt");  // Sleep until IRQ wakes us
     }
     return rx_byte_buf[rx_buf_read++];
 }
