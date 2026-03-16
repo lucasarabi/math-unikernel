@@ -7,6 +7,6 @@ void rtl8139_init(uint32_t bar0);
 
 // rtl8139 NIC API
 
-uint8_t read_ethernet();
+uint8_t rtl8139_poll();
 
 #endif

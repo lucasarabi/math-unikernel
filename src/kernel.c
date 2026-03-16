@@ -15,6 +15,7 @@
 #include "headers/display.h"
 #include "headers/pci.h"
 #include "headers/pic.h"
+#include "nic_drivers/i219.h"           // was e1000.h
 
 #define LIMINE_HANDSHAKE_SUCCESS        (1<<0)
 
@@ -26,7 +27,7 @@
 #define SIMD_ENABLED                    "READY: AVX/SSE enabled.\n"
 #define DISPLAY_INITIALIZED             "READY: Display has been initialized.\n"
 #define SERIAL_DRIVER_INITIALIZED       "READY: Serial drivers have been initialized.\n"
-#define NETWORK_CONTROLLER_FOUND        "READY: Network Contoller found on PCI bus.\n"
+#define NETWORK_CONTROLLER_FOUND        "READY: Network Controller found on PCI bus.\n"
 
 #define LIMINE_FAILURE_LOG              "ERROR: Limine handshake failed.\n"
 #define GDT_FAILURE                     "ERROR: GDT initialization failed.\n"
@@ -65,7 +66,7 @@ __attribute__((used, section(".limine_requests")))
 static volatile struct limine_hhdm_request hhdm_request = {
     .id = LIMINE_HHDM_REQUEST,
     .revision = 0,
-    .response = NULL   
+    .response = NULL
 };
 
 __attribute__((used, section(".limine_requests")))
@@ -86,24 +87,25 @@ uint64_t hhdm_offset;
 void kernel_main(void) {
 
     uint16_t init_status = 0;
-    
-    if(LIMINE_BASE_REVISION_SUPPORTED 
-        || memmap_request.response != NULL
-        || hhdm_request.response != NULL
-        || kernel_addr_request.response != NULL
-        || framebuffer_request.response != NULL 
-        || framebuffer_request.response->framebuffer_count >= 1) 
+
+    if(LIMINE_BASE_REVISION_SUPPORTED
+        && memmap_request.response != NULL
+        && hhdm_request.response != NULL
+        && kernel_addr_request.response != NULL
+        && framebuffer_request.response != NULL
+        && framebuffer_request.response->framebuffer_count >= 1)
     {
         init_status |= LIMINE_HANDSHAKE_SUCCESS;
     }
+
     struct limine_framebuffer* fb = framebuffer_request.response->framebuffers[0];
     hhdm_offset = hhdm_request.response->offset;
 
     pic_remap(32, 40);
 
     init_status |= gdt_init();
-    init_status |= idt_init(); 
-    init_status |= pmm_init(memmap_request.response); 
+    init_status |= idt_init();
+    init_status |= pmm_init(memmap_request.response);
     init_status |= vmm_init(kernel_addr_request.response, memmap_request.response);
     init_status |= enable_simd();
     init_status |= display_init((uint32_t *)fb->address, fb->pitch, fb->width, fb->height);
@@ -111,20 +113,20 @@ void kernel_main(void) {
     init_status |= pci_scan_bus();
 
     PRINTLN;
-    if(init_status & LIMINE_HANDSHAKE_SUCCESS)  PRINTS(LIMINE_SUCCESS_LOG);         else { PRINTS(LIMINE_FAILURE_LOG);          hcf();}
-    if(init_status & GDT_INIT_SUCCESS)          PRINTS(GDT_INITIALIZED);            else { PRINTS(GDT_FAILURE);                 hcf();}
-    if(init_status & IDT_INIT_SUCCESS)          PRINTS(IDT_INITIALIZED);            else { PRINTS(IDT_FAILURE);                 hcf();}
-    if(init_status & PMM_INIT_SUCCESS)          PRINTS(PMM_INITIALIZED);            else { PRINTS(PMM_FAILURE);                 hcf();}
-    if(init_status & VMM_INIT_SUCCESS)          PRINTS(VMM_INITIALIZED);            else { PRINTS(VMM_FAILURE);                 hcf();}
-    if(init_status & DISPLAY_INIT_SUCCESS)      PRINTS(DISPLAY_INITIALIZED);        else { /* You'll know lol*/                 hcf();}
-    if(init_status & SERIAL_INIT_SUCCESS)       PRINTS(SERIAL_DRIVER_INITIALIZED);  else { PRINTS(SERIAL_DRIVER_FAILURE);       hcf();}
-    if(init_status & PCI_INIT_SUCCESS)          PRINTS(NETWORK_CONTROLLER_FOUND);   else { PRINTS(NETWORK_CONTROLLER_MISSING);  hcf();}
+    if(init_status & LIMINE_HANDSHAKE_SUCCESS)  PRINTS(LIMINE_SUCCESS_LOG);         else { PRINTS(LIMINE_FAILURE_LOG);          hcf(); }
+    if(init_status & GDT_INIT_SUCCESS)          PRINTS(GDT_INITIALIZED);            else { PRINTS(GDT_FAILURE);                 hcf(); }
+    if(init_status & IDT_INIT_SUCCESS)          PRINTS(IDT_INITIALIZED);            else { PRINTS(IDT_FAILURE);                 hcf(); }
+    if(init_status & PMM_INIT_SUCCESS)          PRINTS(PMM_INITIALIZED);            else { PRINTS(PMM_FAILURE);                 hcf(); }
+    if(init_status & VMM_INIT_SUCCESS)          PRINTS(VMM_INITIALIZED);            else { PRINTS(VMM_FAILURE);                 hcf(); }
+    if(init_status & DISPLAY_INIT_SUCCESS)      PRINTS(DISPLAY_INITIALIZED);        else {                                      hcf(); }
+    if(init_status & SERIAL_INIT_SUCCESS)       PRINTS(SERIAL_DRIVER_INITIALIZED);  else { PRINTS(SERIAL_DRIVER_FAILURE);       hcf(); }
+    if(init_status & PCI_INIT_SUCCESS)          PRINTS(NETWORK_CONTROLLER_FOUND);   else { PRINTS(NETWORK_CONTROLLER_MISSING);  hcf(); }
     PRINTLN;
 
     // Enable maskable hardware interrupts after completing boot sequence
     __asm__ volatile("sti");
 
-    enum states state = POLLING; 
+    enum states state = POLLING;
     bool running = true;
 
     do {
@@ -132,23 +134,24 @@ void kernel_main(void) {
             case POLLING:
                 PRINTS(STATE_POLLING);
 
-                PRINTTAB; PRINTS("Waiting for magic number."); PRINTLN;
+                PRINTTAB; PRINTS("Waiting for magic number.\n");
                 unlock();
-                PRINTTAB; PRINTS("Unlocked."); PRINTLN;
+                PRINTTAB; PRINTS("Unlocked.\n");
 
-                PRINTTAB; PRINTS("Awaiting payload size."); PRINTLN;
+                PRINTTAB; PRINTS("Awaiting payload size.\n");
                 uint64_t payload_byte_count = poll_payload_size();
-                PRINTTAB; PRINTF("Payload byte size:", payload_byte_count); PRINTLN;
+                PRINTTAB; PRINTF("Payload byte size:", payload_byte_count);
+                PRINTLN;
 
-                uint64_t num_pages = payload_byte_count / (2*MB);
-                if(payload_byte_count % (2*MB) != 0)
+                uint64_t num_pages = payload_byte_count / (2 * MB);
+                if (payload_byte_count % (2 * MB) != 0)
                     num_pages++;
 
                 uint8_t* payload_mem = vmm_alloc_huge_page(num_pages, VMM_PRESENT | VMM_WRITEABLE);
 
-                PRINTTAB; PRINTS("Downloading workload."); PRINTLN;
+                PRINTTAB; PRINTS("Downloading workload.\n");
                 poll_payload(payload_mem, payload_byte_count);
-                PRINTTAB; PRINTS("Workload downloaded."); PRINTLN;
+                PRINTTAB; PRINTS("Workload downloaded.\n");
 
                 PRINTLN;
                 state = EXECUTING;
@@ -157,11 +160,6 @@ void kernel_main(void) {
             case EXECUTING:
                 PRINTS(STATE_EXECUTING);
 
-                // Data we have:
-                    // Payload byte count
-                    // Number of pages
-                    // Pointer to virtual memory containing workload bytes
-
                 PRINTLN;
                 state = EXTRACTING;
                 break;
@@ -169,9 +167,8 @@ void kernel_main(void) {
             case EXTRACTING:
                 PRINTS(STATE_EXTRACTING);
 
-                PRINTLN;            // temp    
-                state = POLLING;    // temp
-                // running = false;
+                PRINTLN;
+                state = POLLING;    // Loop back and wait for the next workload
                 break;
         }
     } while(running);

@@ -62,7 +62,7 @@ static uint32_t rx_read_ptr = 0;
 static uint32_t bytes_left_in_packet = 0;
 static uint8_t* current_data_ptr = 0; // Use a pointer instead of an offset
 
-uint8_t read_ethernet() {
+uint8_t rtl8139_poll() {
     // If bytes in buffer, do not exectue loop, and return them immediately
     while (bytes_left_in_packet == 0) {
         // If register buffer is not empty, parse packet

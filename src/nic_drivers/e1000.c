@@ -8,6 +8,7 @@
 #include "../headers/idt.h"
 
 #define MMIO_MAPPED         "NIC: Intel I219-LM MMIO mapped.\n"
+#define RESET_COMPLETE      "NIC: Reset complete.\n"
 #define MAC_ADDRESS         "NIC: MAC Address: "
 #define HANDSHAKE_COMPLETE  "NIC: Handshake complete.\n"
 
@@ -46,6 +47,14 @@ void e1000_init(uint32_t bar0, uint8_t irq) {
     uint64_t mmio_base_phys = bar0 & ~0xf;
     mmio_base_virt = mmio_base_phys + hhdm_offset;
     vmm_map_range(mmio_base_virt, mmio_base_phys, 128*KB, VMM_PRESENT | VMM_WRITEABLE | VMM_CACHE_DISABLE);
+
+
+    // Reset NIC
+    uint32_t control_reg = *(volatile uint32_t*)(mmio_base_virt + 0x00);
+    *(volatile uint32_t*)(mmio_base_virt + 0x00) = control_reg | (1 << 26);
+
+    for(volatile uint32_t i = 0; i < 10000000; i++) __asm__("nop");
+    PRINTS(RESET_COMPLETE);
     
     // Get MAC address
     volatile uint32_t mac_lo = *(volatile uint32_t*) ( (uint8_t*)mmio_base_virt + RAL0 );
@@ -118,4 +127,15 @@ void e1000_interrupt_handler() {
     volatile uint32_t icr = *(volatile uint32_t*)((uint8_t*)mmio_base_virt + ICR);
 
     PRINTS("\n>>> E1000 INTERRUPT FIRED! PACKET RECEIVED! <<<\n");
+}
+
+void e1000_poll_rx() {
+    // Check the Descriptor Done (DD) bit of the very first descriptor.
+    // The NIC hardware will physically flip this bit to 1 when a packet is written.
+    if (rx_ring_virt[0].status & 0x01) {
+        PRINTS(">>> SILICON HEARTBEAT: PACKET SUCCESSFULLY WRITTEN TO RAM! <<<\n");
+        
+        // Clear the status bit so we can detect the next packet
+        rx_ring_virt[0].status = 0;
+    }
 }

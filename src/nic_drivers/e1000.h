@@ -14,5 +14,6 @@ struct e1000_rx_descriptor {
 } __attribute__((packed));
 
 void e1000_init(uint32_t bar0, uint8_t irq);
+void e1000_poll_rx();
 
 #endif
