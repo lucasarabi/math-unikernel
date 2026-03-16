@@ -66,7 +66,7 @@ void interrupt_dispatcher(struct interrupt_frame* frame) {
         hcf();
     }
     else if (frame->interrupt_number >= 32 && frame->interrupt_number <= 47) {
-        // --- HARDWARE IRQ (HANDLE AND RESUME) ---
+        // HARDWARE IRQ (HANDLE AND RESUME) 
         uint8_t irq = frame->interrupt_number - 32;
 
         // Run the driver's function if it registered one
