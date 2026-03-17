@@ -16,12 +16,12 @@ static uint16_t hdr_read = 0;
 static uint8_t hdr_done = 0;                    // 1 once magic + size have been consumed
 
 void network_set_dest(uint8_t* dest, uint64_t expected_bytes) {
-    rx_dest     = dest;
+    rx_dest = dest;
     rx_expected = expected_bytes;
     rx_received = 0;
-    hdr_done    = 0;
-    hdr_len     = 0;
-    hdr_read    = 0;
+    hdr_done = 0;
+    hdr_len = 0;
+    hdr_read = 0;
 }
 
 void network_receive_frame(uint8_t* data, uint16_t length) {
@@ -30,18 +30,22 @@ void network_receive_frame(uint8_t* data, uint16_t length) {
     uint16_t ethertype = ((uint16_t)data[12] << 8) | data[13];
     if (ethertype != ETHERTYPE_CUSTOM) return;
 
-    uint8_t*  payload     = data + ETH_HEADER_SIZE;
-    uint16_t  payload_len = length - ETH_HEADER_SIZE;
+    uint8_t* payload = data + ETH_HEADER_SIZE;
+    uint16_t payload_len = length - ETH_HEADER_SIZE;
 
     if (!hdr_done) {
         // First frame, contains magic + size header
         // Copy into header buffer for read_ethernet() to consume byte by byte
-        if (payload_len > HEADER_FRAME_SIZE) payload_len = HEADER_FRAME_SIZE;
+        if (payload_len > HEADER_FRAME_SIZE) 
+            payload_len = HEADER_FRAME_SIZE;
+
         for (uint16_t i = 0; i < payload_len; i++)
             hdr_buf[i] = payload[i];
-        hdr_len  = payload_len;
+
+        hdr_len = payload_len;
         hdr_read = 0;
         rx_ready = 1;
+
         return;
     }
 
@@ -73,7 +77,7 @@ uint8_t read_ethernet() {
     }
 
     // Block until the next byte lands in the huge page
-    while (rx_received <= /* bytes consumed so far */ 0)
+    while (rx_received <= 0)
         __asm__ volatile("hlt");
 
     return 0;
