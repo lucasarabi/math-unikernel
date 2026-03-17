@@ -29,6 +29,9 @@ $(KERNEL): $(OBJS)
 	$(LD) $(LDFLAGS) $(OBJS) -o $(KERNEL)
 
 # Compile Assembly
+$(SRC_DIR)/mathlib.o: src/mathlib.c
+	$(CC) $(CFLAGS) -msse -msse2 -mavx -mfma -c $< -o $@
+
 $(SRC_DIR)/%.o: $(SRC_DIR)/%.S
 	$(CC) $(CFLAGS) -c $< -o $@
 
