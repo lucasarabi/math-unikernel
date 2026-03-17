@@ -3,17 +3,16 @@
 #include "nic_drivers/i219.h"
 
 #define ETH_HEADER_SIZE 14
-#define HEADER_FRAME_SIZE 16                    // 4 bytes magic + 8 bytes size + some slack
+#define HEADER_FRAME_SIZE 16                // 4 bytes magic + 8 bytes size + some slack
 
-static uint8_t* rx_dest = 0;                    // Destination buffer (huge page)
-static uint64_t rx_expected = 0;                // Total bytes we expect to receive
-static uint64_t rx_received = 0;                // Total bytes received so far
-static uint8_t rx_ready = 0;                    // 1 when a complete byte is available for read_ethernet()
-
+static uint8_t* rx_dest = 0;                // Destination buffer (huge page)
+static uint64_t rx_expected = 0;            // Total bytes we expect to receive
+static uint64_t rx_received = 0;            // Total bytes received so far
+static uint8_t rx_ready = 0;                // 1 when a complete byte is available for read_ethernet()
 static uint8_t hdr_buf[HEADER_FRAME_SIZE];
 static uint16_t hdr_len = 0;
 static uint16_t hdr_read = 0;
-static uint8_t hdr_done = 0;                    // 1 once magic + size have been consumed
+static uint8_t hdr_done = 0;                // 1 once magic + size have been consumed
 
 void network_set_dest(uint8_t* dest, uint64_t expected_bytes) {
     rx_dest = dest;
