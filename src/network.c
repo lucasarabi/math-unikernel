@@ -1,6 +1,5 @@
 #include "headers/network.h"
 #include "headers/display.h"
-#include "nic_drivers/i219.h"
 
 #define ETH_HEADER_SIZE 14
 #define HEADER_FRAME_SIZE 16                // 4 bytes magic + 8 bytes size + some slack
@@ -13,6 +12,12 @@ static uint8_t hdr_buf[HEADER_FRAME_SIZE];
 static uint16_t hdr_len = 0;
 static uint16_t hdr_read = 0;
 static uint8_t hdr_done = 0;                // 1 once magic + size have been consumed
+
+static void (*nic_poll)() = 0;
+
+void network_set_poll_fn(void (*fn)()) {
+    nic_poll = fn;
+}
 
 void network_set_dest(uint8_t* dest, uint64_t expected_bytes) {
     rx_dest = dest;
@@ -63,8 +68,10 @@ void network_receive_frame(uint8_t* data, uint16_t length) {
 uint8_t read_ethernet() {
     // Drain the header buffer (magic + size)
     if (!hdr_done) {
-        while (!rx_ready || hdr_read >= hdr_len)
+        while (!rx_ready || hdr_read >= hdr_len) {
+            if(nic_poll) nic_poll();
             __asm__ volatile("hlt");
+        }
 
         uint8_t byte = hdr_buf[hdr_read++];
 
@@ -76,8 +83,10 @@ uint8_t read_ethernet() {
     }
 
     // Block until the next byte lands in the huge page
-    while (rx_received <= 0)
+    while (rx_received <= 0) {
+        if(nic_poll) nic_poll();
         __asm__ volatile("hlt");
+    }
 
     return 0;
 }

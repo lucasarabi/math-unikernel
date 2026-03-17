@@ -128,6 +128,7 @@ void kernel_main(void) {
 
     enum states state = POLLING;
     bool running = true;
+    uint8_t* payload_mem;
 
     do {
         switch(state) {
@@ -147,7 +148,7 @@ void kernel_main(void) {
                 if (payload_byte_count % (2 * MB) != 0)
                     num_pages++;
 
-                uint8_t* payload_mem = vmm_alloc_huge_page(num_pages, VMM_PRESENT | VMM_WRITEABLE);
+                payload_mem = vmm_alloc_huge_page(num_pages, VMM_PRESENT | VMM_WRITEABLE);
 
                 PRINTTAB; PRINTS("Downloading workload.\n");
                 poll_payload(payload_mem, payload_byte_count);
@@ -159,6 +160,9 @@ void kernel_main(void) {
 
             case EXECUTING:
                 PRINTS(STATE_EXECUTING);
+
+                void (*workload)() = (void (*)())payload_mem;
+                workload();
 
                 PRINTLN;
                 state = EXTRACTING;

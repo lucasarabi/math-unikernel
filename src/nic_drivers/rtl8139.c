@@ -3,11 +3,18 @@
 #include "../headers/display.h"
 #include "../headers/hhdm_offset.h"
 #include "../headers/pmm.h"
+#include "../headers/network.h"
+#include "../headers/pic.h"
+#include "../headers/idt.h"
 
 #define DRIVER_LOADED           "NIC: RTL8139 driver loaded. BAR0 address: "
 #define RESET_COMPLETE          "NIC: Reset complete.\n"
 #define MAC_ADDRESS             "NIC: MAC Address: "
 #define RX_BUFFER_LISTENING     "NIC: RX Buffer configured and listening.\n"
+
+#define IMR 0x003C  // Interrupt Mask Register
+#define ISR 0x003E  // Interrupt Status Register
+#define ROK (1<<0)  // Receive OK interrupt bit
 
 static void print_mac_byte(uint8_t byte) {
     const char hex_chars[] = "0123456789ABCDEF";
@@ -21,7 +28,10 @@ static void print_mac_byte(uint8_t byte) {
 uint8_t* rx_buffer;
 static uint32_t global_bar0;
 
-void rtl8139_init(uint32_t bar0) {
+void rtl8139_interrupt_handler();
+
+void rtl8139_init(uint32_t bar0, uint8_t irq) {
+    bar0 &= ~0x3;
     global_bar0 = bar0;
     PRINTS(DRIVER_LOADED);
     PRINTH(bar0);
@@ -55,44 +65,44 @@ void rtl8139_init(uint32_t bar0) {
     outb(bar0 + 0x37, 0x0c);    // Enable use of RX bucket
     outb(bar0 + 0x50, 0x00);    // Lock config registers to prevent overwrites
 
+    // Enable Receive OK interrupt
+    outw(bar0 + IMR, ROK);
+
+    // Wire up to PIC and IDT
+    pic_unmask(irq);
+    register_irq_handler(irq, rtl8139_interrupt_handler);
+
     PRINTS(RX_BUFFER_LISTENING);
 }
 
 static uint32_t rx_read_ptr = 0;
-static uint32_t bytes_left_in_packet = 0;
-static uint8_t* current_data_ptr = 0; // Use a pointer instead of an offset
 
-uint8_t rtl8139_poll() {
-    // If bytes in buffer, do not exectue loop, and return them immediately
-    while (bytes_left_in_packet == 0) {
-        // If register buffer is not empty, parse packet
-        if (!(inb(global_bar0 + 0x37) & 0x01)) {
-            uint8_t* packet_header = &rx_buffer[rx_read_ptr];
-            uint16_t total_len = *(uint16_t*)(packet_header + 2); // Get packet length
+void rtl8139_poll() {
+    while(!(inb(global_bar0 + 0x37) & 0x01)) {
+        uint8_t* packet_header = &rx_buffer[rx_read_ptr];
+        uint16_t total_len = *(uint16_t*)(packet_header + 2);
 
-            // Point exactly to the data (Skip 4 NIC + 14 Ethernet bytes)
-            current_data_ptr = packet_header + 18;
-            if(total_len < 18) 
-                bytes_left_in_packet = 0;
-            else    
-                bytes_left_in_packet = total_len - 18;
-
-            // Move pointer for NEXT packet
-            rx_read_ptr = (rx_read_ptr + total_len + 4 + 3) & ~3;
-            
-            // Wrap around check for the 8KB ring buffer
-            if(rx_read_ptr >= 8192) 
-                rx_read_ptr -= 8192;
-
-            // Hardware sync -- CPU has parsed up to current rx_read_ptr
-            outw(global_bar0 + 0x38, rx_read_ptr - 16);
+        // Full frame starts at packet_header + 4 (skip 4 byte NIC header)
+        // Pass to network.c for EtherType filtering
+        if (total_len > 4) {
+            network_receive_frame(packet_header + 4, total_len - 4);
         }
+
+        // Advance ring buffer pointer
+        rx_read_ptr = (rx_read_ptr + total_len + 4 + 3) & ~3;
+        if (rx_read_ptr >= 8192)
+            rx_read_ptr -= 8192;
+
+        outw(global_bar0 + 0x38, rx_read_ptr - 16);
     }
+}
 
-    uint8_t data = *current_data_ptr;
-    
-    current_data_ptr++;
-    bytes_left_in_packet--;
+void rtl8139_interrupt_handler() {
+    // Read and clear the interrupt status
+    uint16_t isr = inw(global_bar0 + ISR);
+    outw(global_bar0 + ISR, isr);  // Writing back clears the bits
 
-    return data;
+    if (isr & ROK) {
+        rtl8139_poll();
+    }
 }

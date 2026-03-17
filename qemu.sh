@@ -17,5 +17,5 @@ qemu-system-x86_64 \
     -no-reboot \
     -no-shutdown \
     -cpu max \
-    -netdev socket,id=n1,listen=:1234 \
-    -device rtl8139,netdev=n1
+    -netdev tap,id=net0,ifname=tap0,script=no,downscript=no \
+    -device rtl8139,netdev=net0

@@ -2,6 +2,7 @@
 #include "headers/io.h"
 #include "headers/lib.h"
 #include "headers/display.h"
+#include "headers/network.h"
 #include "nic_drivers/rtl8139.h"
 #include "nic_drivers/i219.h"
 
@@ -127,18 +128,20 @@ uint16_t pci_scan_bus() {
                 switch (vendor)
                 {
                 case INTEL_VENDOR_ID:
-                    // PRINTS(FOUND_INTEL_ID);
+                    PRINTS(FOUND_INTEL_ID);
                     PRINTS("NIC: Vendor: "); PRINTH(vendor); PRINTLN;
                     PRINTS("NIC: Device ID: "); PRINTH(device_id); PRINTLN;
                     i219_init(bar0, irq_line);
+                    network_set_poll_fn(i219_poll_rx);
                     break;
 
                 case REALTEK_VENDOR_ID:
-                    // PRINTS(FOUND_REALTEK_ID);
+                    PRINTS(FOUND_REALTEK_ID);
                     PRINTS("NIC: Vendor: "); PRINTH(vendor); PRINTLN;
                     PRINTS("NIC: Device ID: "); PRINTH(device_id); PRINTLN;
-                    rtl8139_init(bar0);
-                    break;
+                    rtl8139_init(bar0, irq_line);  
+                    network_set_poll_fn(rtl8139_poll);
+                    break; 
                 }
 
                 return PCI_INIT_SUCCESS;
