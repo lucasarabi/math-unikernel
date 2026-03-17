@@ -1,6 +1,4 @@
-#include <stdint.h>
-#include <stddef.h>
-#include <stdbool.h>
+#include "headers/kernel_api.h"
 #include "headers/limine.h"
 #include "headers/hhdm_offset.h"
 #include "headers/lib.h"
@@ -15,7 +13,6 @@
 #include "headers/display.h"
 #include "headers/pci.h"
 #include "headers/pic.h"
-#include "nic_drivers/i219.h"           // was e1000.h
 
 #define LIMINE_HANDSHAKE_SUCCESS        (1<<0)
 
@@ -111,8 +108,8 @@ void kernel_main(void) {
     init_status |= display_init((uint32_t *)fb->address, fb->pitch, fb->width, fb->height);
     init_status |= serial_init(115200);
     init_status |= pci_scan_bus();
-
     PRINTLN;
+
     if(init_status & LIMINE_HANDSHAKE_SUCCESS)  PRINTS(LIMINE_SUCCESS_LOG);         else { PRINTS(LIMINE_FAILURE_LOG);          hcf(); }
     if(init_status & GDT_INIT_SUCCESS)          PRINTS(GDT_INITIALIZED);            else { PRINTS(GDT_FAILURE);                 hcf(); }
     if(init_status & IDT_INIT_SUCCESS)          PRINTS(IDT_INITIALIZED);            else { PRINTS(IDT_FAILURE);                 hcf(); }
@@ -125,6 +122,12 @@ void kernel_main(void) {
 
     // Enable maskable hardware interrupts after completing boot sequence
     __asm__ volatile("sti");
+    
+    vmm_map_range(KERNEL_API_ADDRESS, KERNEL_API_ADDRESS, 4096, VMM_PRESENT | VMM_WRITEABLE);
+    kernel_api_t* api = (kernel_api_t*)KERNEL_API_ADDRESS;
+    api->alloc_huge_page = vmm_alloc_huge_page;
+    api->output_buffer = 0;
+    api->output_size = 0;
 
     enum states state = POLLING;
     bool running = true;
@@ -134,6 +137,9 @@ void kernel_main(void) {
         switch(state) {
             case POLLING:
                 PRINTS(STATE_POLLING);
+
+                api->output_buffer = 0;
+                api->output_size   = 0;
 
                 PRINTTAB; PRINTS("Waiting for magic number.\n");
                 unlock();
@@ -172,7 +178,7 @@ void kernel_main(void) {
                 PRINTS(STATE_EXTRACTING);
 
                 PRINTLN;
-                state = POLLING;    // Loop back and wait for the next workload
+                state = POLLING;    
                 break;
         }
     } while(running);
