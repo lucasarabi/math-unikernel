@@ -7,7 +7,6 @@
 #include "headers/vmm.h"
 #include "headers/idt.h"
 #include "headers/gdt.h"
-#include "headers/workload.h"
 #include "headers/loader.h"
 #include "headers/states.h"
 #include "headers/display.h"

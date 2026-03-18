@@ -3,3 +3,4 @@ limine
 src/*.o
 src/nic_drivers/*.o
 unikernel.iso
+workload_test/workload.bin

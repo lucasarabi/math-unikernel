@@ -1,9 +1,14 @@
-#ifndef KERNEL_API_MU_H
-#define KERNEL_API_MU_H
+#ifndef KERNEL_API_HEADER_MU_H
+#define KERNEL_API_HEADER_MU_H
 
 #include <stdint.h>
 
 #define KERNEL_API_ADDRESS 0x10000000
+
+#define MAIN __attribute__((section(".entry")))
+
+#define VMM_PRESENT         (1ULL << 0)
+#define VMM_WRITEABLE       (1ULL << 1)
 
 typedef struct {
     void*  (*alloc_huge_page)(uint64_t n, uint64_t flags);
