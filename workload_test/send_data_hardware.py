@@ -3,8 +3,8 @@ import struct
 import time
 
 TARGET_MAC = "4c:36:4e:a6:31:69"
-SRC_MAC    = "10:7c:61:b6:94:55"
-IFACE      = "eno1"
+SRC_MAC    = "9c:69:d3:40:ab:97"
+IFACE      = "enx9c69d340ab97"
 ETHERTYPE  = 0x88B5
 MAGIC      = 0x474F2121
 CHUNK_SIZE = 1486
@@ -19,7 +19,7 @@ with open("workload.bin", "rb") as f:
 
 header = struct.pack(">I", MAGIC) + struct.pack("<Q", len(payload))
 send_frame(header)
-time.sleep(0.05)  # Give kernel time to process header
+time.sleep(0.5)  # Give kernel time to process header
 
 # Remaining frames: binary chunks
 for i in range(0, len(payload), CHUNK_SIZE):

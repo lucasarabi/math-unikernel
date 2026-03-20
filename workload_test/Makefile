@@ -1,18 +1,19 @@
-CC = gcc
-
-CFLAGS = -O2 -march=native -ffreestanding -nostdlib -fPIC
-LDFLAGS = -Wl,-T,workload.ld
-
-# Output
-TARGET = workload.bin
-SRC    = workload.c
+CC      = gcc
+CFLAGS  = -O2 -march=native -ffreestanding -nostdlib -fPIC
+LDFLAGS = -Wl,-T,workload.ld -static
+SRC     = workload.c
+ELF     = workload.elf
+TARGET  = workload.bin
 
 .PHONY: all clean
 
 all: $(TARGET)
 
-$(TARGET): $(SRC)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET) $(SRC)
+$(ELF): $(SRC)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(ELF) $(SRC)
+
+$(TARGET): $(ELF)
+	objcopy -O binary $(ELF) $(TARGET)
 
 clean:
-	rm -f $(TARGET)
+	rm -f $(ELF) $(TARGET)
