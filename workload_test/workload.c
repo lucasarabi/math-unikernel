@@ -20,7 +20,4 @@ MAIN void run() {
 
     float* output = api->alloc_huge_page(1, VMM_PRESENT | VMM_WRITEABLE);
     output[0] = result;
-
-    api->output_buffer = output;
-    api->output_size   = sizeof(float);
 }

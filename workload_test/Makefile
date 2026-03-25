@@ -14,6 +14,7 @@ $(ELF): $(SRC)
 
 $(TARGET): $(ELF)
 	objcopy -O binary $(ELF) $(TARGET)
+	rm -f $(ELF)
 
 clean:
 	rm -f $(ELF) $(TARGET)
