@@ -14,9 +14,14 @@ static uint16_t hdr_read = 0;
 static uint8_t hdr_done = 0;                // 1 once magic + size have been consumed
 
 static void (*nic_poll)() = 0;
+static void (*nic_send)(uint8_t* data, uint16_t length) = 0;
 
 void network_set_poll_fn(void (*fn)()) {
     nic_poll = fn;
+}
+
+void network_set_send_fn(void (*fn)(uint8_t* data, uint16_t length)) {
+    nic_send = fn;
 }
 
 void network_set_dest(uint8_t* dest, uint64_t expected_bytes) {
