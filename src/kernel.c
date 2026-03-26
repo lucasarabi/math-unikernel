@@ -12,6 +12,7 @@
 #include "headers/display.h"
 #include "headers/pci.h"
 #include "headers/pic.h"
+#include "headers/network.h"
 #include "headers/mathlib.h"
 
 #define LIMINE_HANDSHAKE_SUCCESS        (1<<0)
@@ -136,6 +137,8 @@ void kernel_main(void) {
     do {
         switch(state) {
             case POLLING:
+                reset_header();
+
                 PRINTS(STATE_POLLING);
 
                 api->output_buffer = 0;

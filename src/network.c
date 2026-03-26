@@ -23,9 +23,17 @@ void network_set_dest(uint8_t* dest, uint64_t expected_bytes) {
     rx_dest = dest;
     rx_expected = expected_bytes;
     rx_received = 0;
-    hdr_done = 0;
-    hdr_len = 0;
-    hdr_read = 0;
+}
+
+uint64_t network_bytes_received() {
+    return rx_received;
+}
+
+void reset_header() {
+    hdr_done  = 0;
+    hdr_len   = 0;
+    hdr_read  = 0;
+    rx_ready  = 0;
 }
 
 void network_receive_frame(uint8_t* data, uint16_t length) {
@@ -91,7 +99,3 @@ uint8_t read_ethernet() {
     return 0;
 }
 
-// Returns how many payload bytes have arrived so far.
-uint64_t network_bytes_received() {
-    return rx_received;
-}

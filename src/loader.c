@@ -24,7 +24,9 @@ uint64_t poll_payload_size() {
 }
 
 void poll_payload(uint8_t* payload_mem_addr, uint64_t payload_byte_size) {
-    for (uint64_t i = 0; i < payload_byte_size; i++) {
-        payload_mem_addr[i] = read_ethernet();
+    network_set_dest(payload_mem_addr, payload_byte_size);
+
+    while (network_bytes_received() < payload_byte_size) {
+        __asm__ volatile("hlt");
     }
 }
