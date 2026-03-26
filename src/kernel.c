@@ -14,33 +14,9 @@
 #include "headers/pic.h"
 #include "headers/network.h"
 #include "headers/mathlib.h"
+#include "headers/kernel_logs.h"
 
 #define LIMINE_HANDSHAKE_SUCCESS        (1<<0)
-
-#define LIMINE_SUCCESS_LOG              "READY: Limine handshake successful.\n"
-#define GDT_INITIALIZED                 "READY: GDT has been initialized and loaded.\n"
-#define IDT_INITIALIZED                 "READY: IDT has been initialized and loaded.\n"
-#define PMM_INITIALIZED                 "READY: PMM has been initialized.\n"
-#define VMM_INITIALIZED                 "READY: VMM has been initialized and loaded.\n"
-#define SIMD_ENABLED                    "READY: AVX/SSE enabled.\n"
-#define DISPLAY_INITIALIZED             "READY: Display has been initialized.\n"
-#define SERIAL_DRIVER_INITIALIZED       "READY: Serial drivers have been initialized.\n"
-#define NETWORK_CONTROLLER_FOUND        "READY: Network Controller found on PCI bus.\n"
-
-#define LIMINE_FAILURE_LOG              "ERROR: Limine handshake failed.\n"
-#define GDT_FAILURE                     "ERROR: GDT initialization failed.\n"
-#define IDT_FAILURE                     "ERROR: IDT initialization failed.\n"
-#define PMM_FAILURE                     "ERROR: PMM initialization failed.\n"
-#define VMM_FAILURE                     "ERROR: VMM initialization failed.\n"
-#define SIMD_FAILURE                    "ERROR: AVX/SSE not supported by CPU.\n"
-#define SERIAL_DRIVER_FAILURE           "ERROR: Serial driver initialization failed.\n"
-#define NETWORK_CONTROLLER_MISSING      "ERROR: Network Controller not found on PCI bus.\n"
-
-#define STATE_POLLING                   "STATE: Polling\n"
-#define STATE_EXECUTING                 "STATE: Executing\n"
-#define STATE_EXTRACTING                "STATE: Extracting\n"
-
-#define KERNEL_FINISH                   "Finished kernel execution. Exiting.\n"
 
 #define MB (1ULL << 20)
 
@@ -132,6 +108,7 @@ void kernel_main(void) {
     api->printd = fb_print_dec;
     api->prints = fb_print;
 
+    
 
     enum states state = POLLING;
     bool running = true;
@@ -141,20 +118,15 @@ void kernel_main(void) {
         switch(state) {
             case POLLING:
                 reset_header();
+                api->output_buffer = NULL;
+                api->output_size = 0;
 
                 PRINTS(STATE_POLLING);
 
-                api->output_buffer = 0;
-                api->output_size = 0;
-
-                PRINTS("Waiting for magic number.\n");
                 unlock();
-                PRINTS("Unlocked.\n");
 
-                PRINTS("Awaiting payload size.\n");
                 uint64_t payload_byte_count = poll_payload_size();
-                PRINTF("Payload byte size:", payload_byte_count);
-                PRINTLN;
+                PRINTF("Payload byte size:", payload_byte_count); PRINTLN;
 
                 uint64_t num_pages = payload_byte_count / (2 * MB);
                 if (payload_byte_count % (2 * MB) != 0)
@@ -182,6 +154,12 @@ void kernel_main(void) {
 
             case EXTRACTING:
                 PRINTS(STATE_EXTRACTING);
+
+                if(api->output_buffer && api->output_size > 0) {
+                    // network_send_frame((uint8_t*)api->output_buffer, api->output_size);
+                }
+                else
+                    PRINTS("Output buffer empty. Continuing. \n");
 
                 PRINTLN;
                 state = POLLING;    
