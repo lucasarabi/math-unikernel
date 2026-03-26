@@ -141,13 +141,13 @@ void kernel_main(void) {
                 api->output_buffer = 0;
                 api->output_size = 0;
 
-                PRINTTAB; PRINTS("Waiting for magic number.\n");
+                PRINTS("Waiting for magic number.\n");
                 unlock();
-                PRINTTAB; PRINTS("Unlocked.\n");
+                PRINTS("Unlocked.\n");
 
-                PRINTTAB; PRINTS("Awaiting payload size.\n");
+                PRINTS("Awaiting payload size.\n");
                 uint64_t payload_byte_count = poll_payload_size();
-                PRINTTAB; PRINTF("Payload byte size:", payload_byte_count);
+                PRINTF("Payload byte size:", payload_byte_count);
                 PRINTLN;
 
                 uint64_t num_pages = payload_byte_count / (2 * MB);
@@ -156,9 +156,9 @@ void kernel_main(void) {
 
                 payload_mem = vmm_alloc_huge_page(num_pages, VMM_PRESENT | VMM_WRITEABLE);
 
-                PRINTTAB; PRINTS("Downloading workload.\n");
+                PRINTS("Downloading workload.\n");
                 poll_payload(payload_mem, payload_byte_count);
-                PRINTTAB; PRINTS("Workload downloaded.\n");
+                PRINTS("Workload downloaded.\n");
 
                 PRINTLN;
                 state = EXECUTING;

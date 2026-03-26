@@ -170,9 +170,6 @@ void i219_poll_rx() {
             PRINTS("NIC: Packet received with errors, dropping.\n");
         } else {
             network_receive_frame(packet, length);
-            PRINTS("NIC: Packet received! Length: ");
-            PRINTD(length);
-            PRINTLN;
         }
 
         // Clear the status so we can detect the next packet in this slot.
