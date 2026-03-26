@@ -14,7 +14,8 @@ typedef struct {
     void*  (*alloc_huge_page)(uint64_t n, uint64_t flags);
     float  (*dot_product)(float* a, float* b, uint64_t count);
     void   (*matrix_multiply)(float* a, float* b, float* out, uint64_t n);
-
+    void   (*printd)(uint64_t);
+    void   (*prints)(const char*);
 } kernel_api_t;
 
 #endif

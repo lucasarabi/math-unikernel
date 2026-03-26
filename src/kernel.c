@@ -129,6 +129,9 @@ void kernel_main(void) {
     api->alloc_huge_page = vmm_alloc_huge_page;
     api->dot_product = dot_product;
     api->matrix_multiply = matrix_multiply;
+    api->printd = fb_print_dec;
+    api->prints = fb_print;
+
 
     enum states state = POLLING;
     bool running = true;
