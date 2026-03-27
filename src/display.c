@@ -104,3 +104,13 @@ void fb_print_dec(uint64_t val) {
         fb_putchar(buffer[--i]);
     }
 }
+
+void fb_clear() {
+    for (uint32_t y = 0; y < fb_height; y++) {
+        for (uint32_t x = 0; x < fb_width; x++) {
+            fb_ptr[y * (fb_pitch / 4) + x] = 0x00000000;
+        }
+    }    
+    cursor_x = 0;
+    cursor_y = 0;
+}

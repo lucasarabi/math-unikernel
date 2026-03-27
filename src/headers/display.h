@@ -10,6 +10,7 @@ void fb_putchar(char c);
 void fb_print(const char *str);
 void fb_print_hex(uint64_t val);
 void fb_print_dec(uint64_t val);
+void fb_clear();
 
 #define PRINTS(msg)          fb_print(msg)
 #define PRINTH(val)          fb_print_hex(val)

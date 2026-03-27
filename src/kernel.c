@@ -58,6 +58,12 @@ static volatile struct limine_framebuffer_request framebuffer_request = {
 
 uint64_t hhdm_offset;
 
+void delay_ms(uint32_t ms) {
+    for (uint32_t i = 0; i < ms; i++)
+        for (uint32_t j = 0; j < 500; j++)
+            outb(0x80, 0);
+}
+
 void kernel_main(void) {
 
     uint16_t init_status = 0;
@@ -97,8 +103,10 @@ void kernel_main(void) {
     if(init_status & PCI_INIT_SUCCESS)          PRINTS(NETWORK_CONTROLLER_FOUND);   else { PRINTS(NETWORK_CONTROLLER_MISSING);  hcf(); }
     PRINTLN;
 
-    // Enable maskable hardware interrupts after completing boot sequence
-    __asm__ volatile("sti");
+    delay_ms(1500);
+    fb_clear();
+
+    __asm__ volatile("sti"); // Enable maskable hardware interrupts after completing boot sequence
     
     vmm_map_range(KERNEL_API_ADDRESS, KERNEL_API_ADDRESS, 4096, VMM_PRESENT | VMM_WRITEABLE);
     kernel_api_t* api = (kernel_api_t*)KERNEL_API_ADDRESS;
@@ -107,8 +115,6 @@ void kernel_main(void) {
     api->matrix_multiply = matrix_multiply;
     api->printd = fb_print_dec;
     api->prints = fb_print;
-
-    
 
     enum states state = POLLING;
     bool running = true;
