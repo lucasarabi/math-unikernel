@@ -28,6 +28,8 @@ typedef struct {
     // Output
     void     (*printd)(uint64_t);
     void     (*prints)(const char*);
+    void     (*printh)(uint64_t);
+    void     (*clear)(void);
     void     (*set_output)(void* buffer, uint64_t size);
     void*    output_buffer;
     uint64_t output_size;

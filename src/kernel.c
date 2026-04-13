@@ -106,7 +106,7 @@ void kernel_main(void) {
     PRINTLN;
 
     uint64_t start = rdtscp();
-    uint64_t timeout_cycles = ms_to_cycles(5000); // 5 seconds
+    uint64_t timeout_cycles = ms_to_cycles(3000); // 3 seconds
 
     while ((rdtscp() - start) < timeout_cycles)
         ;
@@ -128,7 +128,10 @@ void kernel_main(void) {
     api->cycles_to_ms = cycles_to_ms;
     api->printd = fb_print_dec;
     api->prints = fb_print;
-    api->set_output = NULL; // implement if needed
+    api->printh = fb_print_hex;
+    api->clear = fb_clear;
+    // unused
+    api->set_output = NULL; 
     api->output_buffer = NULL;
     api->output_size = 0;
 
@@ -175,7 +178,7 @@ void kernel_main(void) {
                 break;
 
             case EXTRACTING:
-                PRINTS(STATE_EXTRACTING);
+                // PRINTS(STATE_EXTRACTING);
 
                 if(api->output_buffer && api->output_size > 0) {
                     // network_send_frame((uint8_t*)api->output_buffer, api->output_size);
@@ -184,7 +187,7 @@ void kernel_main(void) {
                     // PRINTS("Output buffer empty. Continuing. \n");
                 }
 
-                PRINTLN;
+                // PRINTLN;
                 state = POLLING;    
                 break;
         }

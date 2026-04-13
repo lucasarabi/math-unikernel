@@ -10,6 +10,8 @@
 #define PD_SHIFT   21
 #define PT_SHIFT   12
 
+#define HEAP_START 0xffff900000000000
+
 struct vmm_context vmm; 
 
 static void vmm_prep_pml4() {
@@ -76,7 +78,7 @@ uint8_t vmm_init(struct limine_kernel_address_response* kernel_addr_response, st
     return VMM_INIT_SUCCESS;
 }
 
-uint64_t next_virt_addr = 0xffff900000000000;
+uint64_t next_virt_addr = HEAP_START;
 
 void* vmm_alloc(uint64_t num_pages, uint64_t flags) {
     void* start_addr = (void*)next_virt_addr;
@@ -132,4 +134,8 @@ void* vmm_alloc_huge_page(uint64_t num_pages, uint64_t flags) {
     }
 
     return start_addr;
+}
+
+void vmm_reset_heap() {
+    next_virt_addr = HEAP_START;  
 }

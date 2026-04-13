@@ -1,4 +1,5 @@
 #include "headers/lib.h"
+#include "headers/display.h"
 
 void* memcpy(void* restrict dest, const void* restrict src, size_t n) {
     uint8_t* restrict pdest = (uint8_t* restrict)dest;
@@ -120,6 +121,7 @@ uint16_t timer_calibrate(void) {
     }
 
     tsc_freq_hz = (tsc_elapsed * PIT_FREQ_HZ) / pit_elapsed;
+    PRINTS("TSC freq: "); PRINTD(tsc_freq_hz); PRINTLN;
 
     if (tsc_freq_hz == 0) {
         asm volatile ("sti");
