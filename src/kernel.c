@@ -172,6 +172,7 @@ void kernel_main(void) {
 
                 void (*workload)() = (void (*)())payload_mem;
                 workload();
+                vmm_reset_heap();
 
                 PRINTLN;
                 state = EXTRACTING;

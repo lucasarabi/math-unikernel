@@ -137,5 +137,19 @@ void* vmm_alloc_huge_page(uint64_t num_pages, uint64_t flags) {
 }
 
 void vmm_reset_heap() {
-    next_virt_addr = HEAP_START;  
+    for (uint64_t addr = HEAP_START; addr < next_virt_addr; addr += 0x200000) {
+        uint64_t pml4_idx = (addr >> 39) & 0x1FF;
+        uint64_t pdpt_idx = (addr >> 30) & 0x1FF;
+        uint64_t pd_idx   = (addr >> 21) & 0x1FF;
+        
+        page_table_t* pdpt = (page_table_t*)(VMM_GET_ADDR(vmm.pml4_virt->entries[pml4_idx]) + hhdm_offset);
+        page_table_t* pd   = (page_table_t*)(VMM_GET_ADDR(pdpt->entries[pdpt_idx]) + hhdm_offset);
+        
+        uint64_t phys = VMM_GET_ADDR(pd->entries[pd_idx]);
+        pmm_free_2mb(phys);
+        
+        pd->entries[pd_idx] = 0;
+        __asm__ volatile("invlpg (%0)" :: "r"(addr) : "memory");
+    }
+    next_virt_addr = HEAP_START;
 }
