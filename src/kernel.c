@@ -91,6 +91,7 @@ void kernel_main(void) {
     init_status |= display_init((uint32_t *)fb->address, fb->pitch, fb->width, fb->height);
     init_status |= serial_init(115200);
     init_status |= pci_scan_bus();
+    init_status |= timer_calibrate();
     PRINTLN;
 
     if(init_status & LIMINE_HANDSHAKE_SUCCESS)  PRINTS(LIMINE_SUCCESS_LOG);         else { PRINTS(LIMINE_FAILURE_LOG);          hcf(); }
@@ -101,20 +102,35 @@ void kernel_main(void) {
     if(init_status & DISPLAY_INIT_SUCCESS)      PRINTS(DISPLAY_INITIALIZED);        else {                                      hcf(); }
     if(init_status & SERIAL_INIT_SUCCESS)       PRINTS(SERIAL_DRIVER_INITIALIZED);  else { PRINTS(SERIAL_DRIVER_FAILURE);       hcf(); }
     if(init_status & PCI_INIT_SUCCESS)          PRINTS(NETWORK_CONTROLLER_FOUND);   else { PRINTS(NETWORK_CONTROLLER_MISSING);  hcf(); }
+    if(init_status & TIMER_INIT_SUCCESS)        PRINTS(TIMER_CALIBRATED);           else { PRINTS(TIMER_CALIBRATION_FAILURE);   hcf(); }
     PRINTLN;
 
-    delay_ms(1500);
-    fb_clear();
+    uint64_t start = rdtscp();
+    uint64_t timeout_cycles = ms_to_cycles(5000); // 5 seconds
+
+    while ((rdtscp() - start) < timeout_cycles)
+        ;
+
+    fb_clear(); 
 
     __asm__ volatile("sti"); // Enable maskable hardware interrupts after completing boot sequence
     
     vmm_map_range(KERNEL_API_ADDRESS, KERNEL_API_ADDRESS, 4096, VMM_PRESENT | VMM_WRITEABLE);
-    kernel_api_t* api = (kernel_api_t*)KERNEL_API_ADDRESS;
+    kernel_api_t *api = (kernel_api_t *)KERNEL_API_ADDRESS;
     api->alloc_huge_page = vmm_alloc_huge_page;
     api->dot_product = dot_product;
     api->matrix_multiply = matrix_multiply;
+    api->spmv_csr = spmv_csr;
+    api->init_vector_deterministic = init_vector_deterministic;
+    api->init_matrix_deterministic = init_matrix_deterministic;
+    api->generate_banded_matrix = generate_banded_matrix;
+    api->rdtscp = rdtscp;
+    api->cycles_to_ms = cycles_to_ms;
     api->printd = fb_print_dec;
     api->prints = fb_print;
+    api->set_output = NULL; // implement if needed
+    api->output_buffer = NULL;
+    api->output_size = 0;
 
     enum states state = POLLING;
     bool running = true;
@@ -164,8 +180,9 @@ void kernel_main(void) {
                 if(api->output_buffer && api->output_size > 0) {
                     // network_send_frame((uint8_t*)api->output_buffer, api->output_size);
                 }
-                else
-                    PRINTS("Output buffer empty. Continuing. \n");
+                else {
+                    // PRINTS("Output buffer empty. Continuing. \n");
+                }
 
                 PRINTLN;
                 state = POLLING;    

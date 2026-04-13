@@ -10,6 +10,7 @@
 #define DISPLAY_INITIALIZED             "READY: Display has been initialized.\n"
 #define SERIAL_DRIVER_INITIALIZED       "READY: Serial drivers have been initialized.\n"
 #define NETWORK_CONTROLLER_FOUND        "READY: Network Controller found on PCI bus.\n"
+#define TIMER_CALIBRATED                "READY: Timer calibrated.\n"
 
 #define LIMINE_FAILURE_LOG              "ERROR: Limine handshake failed.\n"
 #define GDT_FAILURE                     "ERROR: GDT initialization failed.\n"
@@ -19,6 +20,7 @@
 #define SIMD_FAILURE                    "ERROR: AVX/SSE not supported by CPU.\n"
 #define SERIAL_DRIVER_FAILURE           "ERROR: Serial driver initialization failed.\n"
 #define NETWORK_CONTROLLER_MISSING      "ERROR: Network Controller not found on PCI bus.\n"
+#define TIMER_CALIBRATION_FAILURE       "ERROR: Timer failed to calibrate.\n"
 
 #define STATE_POLLING                   "STATE: Polling\n"
 #define STATE_EXECUTING                 "STATE: Executing\n"
