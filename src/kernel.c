@@ -105,14 +105,6 @@ void kernel_main(void) {
     if(init_status & TIMER_INIT_SUCCESS)        PRINTS(TIMER_CALIBRATED);           else { PRINTS(TIMER_CALIBRATION_FAILURE);   hcf(); }
     PRINTLN;
 
-    uint64_t start = rdtscp();
-    uint64_t timeout_cycles = ms_to_cycles(3000); // 3 seconds
-
-    while ((rdtscp() - start) < timeout_cycles)
-        ;
-
-    fb_clear(); 
-
     __asm__ volatile("sti"); // Enable maskable hardware interrupts after completing boot sequence
     
     vmm_map_range(KERNEL_API_ADDRESS, KERNEL_API_ADDRESS, 4096, VMM_PRESENT | VMM_WRITEABLE);
