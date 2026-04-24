@@ -26,7 +26,7 @@ Workloads are small, position-independent C programs compiled against a thin **K
 ## Directory Structure
 
 ```
-math_unikernel/
+math-unikernel/
 ├── src/                        ← All C and Assembly kernel source files
 │   ├── headers/                ← Public header files for each subsystem
 │   ├── nic_drivers/            ← Network interface card drivers
@@ -242,8 +242,8 @@ Then follow Option A to install. To develop with hot-reload, open the folder in 
 
 ### Developing a Workload
 
-1. Open your workload project folder in VSCode. The folder must contain `workload.c` and an `sdk/` subdirectory (`kernel_api.h`, `linker_script.ld`, `Makefile`). Copy `sdk/` from `math_unikernel_vscode_extension/sdk/`.
-
+1. Open your workload project folder in VSCode. The folder must contain `workload.c` and an `sdk/` subdirectory (`kernel_api.h`, `linker_script.ld`, `Makefile`). If `sdk/` is missing, a prompt will appear that will ask to create it in the folder root directory.
+   
 2. The **MU Controls** panel appears at the bottom of the Explorer sidebar with **Compile** and **Stream** buttons.
 
 3. Write your workload using the `MAIN` macro as the entry point:
